@@ -47,7 +47,6 @@ public class UIDataSelector extends PopupWindow{
 	private int leftLineColor = Color.parseColor("#33444444");
 	private int rightLineColor = Color.parseColor("#33444444");
 	private int itemTextColor = Color.parseColor("#cc444444");
-//	private int itemSelectTextColor = Color.parseColor("#FF3DB399");
 	private ListView listView1;
 	private ListView listView2;
 	private ListView listView3;
@@ -94,11 +93,6 @@ public class UIDataSelector extends PopupWindow{
 		return this;
 	}
 	
-//	public UIDataSelector setItemSelectTextColor(int itemSelectTextColor){
-//		this.itemSelectTextColor = itemSelectTextColor;
-//		return this;
-//	}
-	
 	public UIDataSelector setItemTextSize(int itemTextSize){
 		this.itemTextSize = itemTextSize;
 		return this;
@@ -144,7 +138,6 @@ public class UIDataSelector extends PopupWindow{
 	@SuppressWarnings("deprecation")
 	@SuppressLint("InflateParams") 
 	public UIDataSelector builder(){
-//		selector = new PopupWindow(context);
 		setBackgroundDrawable(new BitmapDrawable());
 		setContentView(createContentView());
 		setWidth(WIDTH);
