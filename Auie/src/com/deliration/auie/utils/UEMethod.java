@@ -5,8 +5,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.content.Context;
+
 public class UEMethod {
 
+	public static int dp2px(Context context, float dp){
+        return (int) (dp * context.getResources().getDisplayMetrics().density + 0.5f);
+    }
+	
 	/**
 	 * Encrypt String by SHA256.
 	 * @param String: will be encrypted String.
