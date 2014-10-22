@@ -70,7 +70,7 @@ public class UIActionSheetDialog extends PopupWindow{
 		childParams.setMargins(dp2px(8), 0, dp2px(8), 0);
 		childLayout.setLayoutParams(childParams);
 		childLayout.setOrientation(LinearLayout.VERTICAL);
-		childLayout.setBackgroundDrawable(createBackground(10));
+		childLayout.setBackgroundDrawable(createBackground(Color.parseColor("#CCFFFFFF"), 10));
 		
 		//标题
 		TextView titleTextView = new TextView(context);
@@ -98,7 +98,7 @@ public class UIActionSheetDialog extends PopupWindow{
 		sheetLayout.addView(contentLayout);
 		
 		//取消按钮
-		TextView cancelTextView = new TextView(context);
+		final TextView cancelTextView = new TextView(context);
 		LayoutParams params = getParams(LayoutParams.MATCH_PARENT, dp2px(45));
 		params.setMargins(dp2px(8), dp2px(8), dp2px(8), dp2px(8));
 		cancelTextView.setLayoutParams(params);
@@ -106,7 +106,7 @@ public class UIActionSheetDialog extends PopupWindow{
 		cancelTextView.setTextSize(16);
 		cancelTextView.setGravity(Gravity.CENTER);
 		cancelTextView.setText("取消");
-		cancelTextView.setBackgroundDrawable(createBackground(10));
+		cancelTextView.setBackgroundDrawable(createBackground(Color.parseColor("#CCFFFFFF"), 10));
 		cancelTextView.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -128,11 +128,11 @@ public class UIActionSheetDialog extends PopupWindow{
 		return rootLayout;
 	}
 	
-	private ShapeDrawable createBackground(float radius){
+	private ShapeDrawable createBackground(int color, float radius){
 		float[] outerR = new float[] { radius, radius, radius, radius, radius, radius, radius, radius };
 		RoundRectShape roundRectShape = new RoundRectShape(outerR, null, null);
         ShapeDrawable shapeDrawable = new ShapeDrawable(roundRectShape);
-        shapeDrawable.getPaint().setColor(Color.parseColor("#CCFFFFFF"));
+        shapeDrawable.getPaint().setColor(color);
         shapeDrawable.getPaint().setStyle(Paint.Style.FILL);
         return shapeDrawable;
 	}
