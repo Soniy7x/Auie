@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 /**
  * 基础类
@@ -96,28 +95,4 @@ public abstract class UEFragment extends Fragment implements OnClickListener{
 		}
 	}
 	
-	/**
-	 * 弹出消息-持续时间短
-	 * @param text 消息文本
-	 */
-	public void showMessageShort(String text){
-		Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
-	}
-	
-	/**
-	 * 弹出消息-持续时间长
-	 * @param text 消息文本
-	 */
-	public void showMessageLong(String text){
-		Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
-	}
-	
-	/**
-	 * 弹出消息-自定义时间
-	 * @param text 消息文本
-	 * @param time 展示时长
-	 */
-	public void showMessage(String text, int time){
-		Toast.makeText(getActivity(), text, time).show();
-	}
 }
