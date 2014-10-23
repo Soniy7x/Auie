@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
@@ -29,6 +30,7 @@ public class UIActionSheetDialog extends PopupWindow{
 	private Context context;
 	private String title;
 	private Typeface typeface;
+	private LinearLayout rootLayout;
 	private LinearLayout contentLayout;
 	private LinearLayout parentLayout;
 	private ScrollView sheetLayout;
@@ -54,7 +56,7 @@ public class UIActionSheetDialog extends PopupWindow{
 	@SuppressWarnings("deprecation")
 	private View createContentView(){
 		//根布局
-		LinearLayout rootLayout = new LinearLayout(context);
+		rootLayout = new LinearLayout(context);
 		rootLayout.setLayoutParams(getParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		rootLayout.setOrientation(LinearLayout.VERTICAL);
 		rootLayout.setBackgroundColor(Color.parseColor("#77000000"));
@@ -138,7 +140,7 @@ public class UIActionSheetDialog extends PopupWindow{
 	}
 	
 	@SuppressWarnings("deprecation")
-	public UIActionSheetDialog builder() {
+	private UIActionSheetDialog builder() {
 		setBackgroundDrawable(new BitmapDrawable());
 		setContentView(createContentView());
 		setWidth(display.getWidth());
@@ -225,9 +227,13 @@ public class UIActionSheetDialog extends PopupWindow{
 
 	@SuppressWarnings("deprecation")
 	public void show() {
+		builder();
 		setSheetItems();
+		AlphaAnimation animation1 = new AlphaAnimation(0.3f, 1.0f);
+		animation1.setDuration(200);
 		TranslateAnimation animation = new TranslateAnimation(0, 0, display.getHeight(), 0);
-		animation.setDuration(560);
+		animation.setDuration(320);
+		rootLayout.startAnimation(animation1);
 		parentLayout.startAnimation(animation);
 		showAtLocation(((ViewGroup)(((Activity) context).findViewById(android.R.id.content))).getChildAt(0), Gravity.BOTTOM, 0, 0);
 	}
