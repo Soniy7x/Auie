@@ -2,6 +2,7 @@ package com.deliration.auie.ui;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
@@ -11,12 +12,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.deliration.auie.utils.UEMethod;
 
 public class UIViewSwitcher extends LinearLayout {
 
-	private LinearLayout.LayoutParams defaultTabLayoutParams;
 	private LinearLayout.LayoutParams expandedTabLayoutParams;
 
 	public OnPageChangeListener delegatePageListener;
@@ -25,22 +26,21 @@ public class UIViewSwitcher extends LinearLayout {
 	private UISwitcherViewPager pager;
 
 	private int tabCount;
-
 	private int selectedPosition = 0;
 
-	private boolean shouldExpand = true;
+	private boolean autoNotice = true;
 	
 	private int tabPadding = 24;
 	private int tabTextSize = 12;
 	
 	private int tabTextColor = 0xDD666666;
-	private int tabTextSelectedColor = 0xFF4D7EA6;
+	private int tabTextSelectedColor = 0xFF45C01A;
 	private int tabBackgroundColor = 0xFFF8F8F8;
+	private int tabBackgroundSelectColor = Color.TRANSPARENT;
 	private int toplineColor = 0x33D8D8D8;
+	
 	private Typeface tabTypeface = null;
 	private int tabTypefaceStyle = Typeface.NORMAL;
-	
-	public Drawable drawable;
 
 	public interface SwitchProvider {
 		public Drawable getIconDrawable(int position);
@@ -58,7 +58,7 @@ public class UIViewSwitcher extends LinearLayout {
 	public UIViewSwitcher(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		
-		setWillNotDraw(false);
+		setBackgroundColor(Color.LTGRAY);
 		
 		LinearLayout rootLayout = new LinearLayout(context);
 		rootLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -70,13 +70,13 @@ public class UIViewSwitcher extends LinearLayout {
 		
 		tabsContainer = new LinearLayout(context);
 		tabsContainer.setOrientation(LinearLayout.HORIZONTAL);
+		tabsContainer.setBackgroundColor(tabBackgroundColor);
 		tabsContainer.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		
 		rootLayout.addView(view);
 		rootLayout.addView(tabsContainer);
 		addView(rootLayout);
 		
-		defaultTabLayoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
 		expandedTabLayoutParams = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1.0f);
 
 	}
@@ -115,24 +115,41 @@ public class UIViewSwitcher extends LinearLayout {
 		LinearLayout tab = new LinearLayout(getContext());
 		tab.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, UEMethod.dp2px(getContext(), 52)));
 		tab.setGravity(Gravity.CENTER);
-		tab.setOrientation(LinearLayout.VERTICAL);
+		tab.setOrientation(LinearLayout.HORIZONTAL);
 		
-		LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT, UEMethod.dp2px(getContext(), 30));
+		RelativeLayout tabContent = new RelativeLayout(getContext());
+		tabContent.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
+		
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(UEMethod.dp2px(getContext(), 32), UEMethod.dp2px(getContext(), 32));
 		params.setMargins(0, UEMethod.dp2px(getContext(), 4), 0, 0);
+		params.addRule(RelativeLayout.CENTER_HORIZONTAL);
 		ImageView imageView = new ImageView(getContext());
 		imageView.setImageDrawable(drawable);
 		imageView.setLayoutParams(params);
+		imageView.setId(1);
 		imageView.setScaleType(ScaleType.FIT_CENTER);
 		
+		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		params2.addRule(RelativeLayout.BELOW, 1);
+		params2.addRule(RelativeLayout.CENTER_HORIZONTAL);
 		TextView textView = new TextView(getContext());
-		textView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+		textView.setLayoutParams(params2);
 		textView.setText(title);
 		textView.setTextSize(tabTextSize);
 		textView.setTextColor(tabTextColor);
 		textView.setSingleLine();
 		
-		tab.addView(imageView);
-		tab.addView(textView);
+		RelativeLayout.LayoutParams params3 = new RelativeLayout.LayoutParams(UEMethod.dp2px(getContext(), 10), UEMethod.dp2px(getContext(), 10));
+		params3.addRule(RelativeLayout.RIGHT_OF, 1);
+		params3.setMargins(0, UEMethod.dp2px(getContext(), 6), 0, 0);
+		ImageView noticeImageView = new ImageView(getContext());
+		noticeImageView.setLayoutParams(params3);
+		noticeImageView.setScaleType(ScaleType.FIT_XY);
+		
+		tabContent.addView(imageView);
+		tabContent.addView(textView);
+		tabContent.addView(noticeImageView);
+		tab.addView(tabContent);
 		
 		tab.setFocusable(true);
 		tab.setOnClickListener(new OnClickListener() {
@@ -148,19 +165,46 @@ public class UIViewSwitcher extends LinearLayout {
 		});
 		
 		tab.setPadding(tabPadding, 0, tabPadding, 0);
-		tabsContainer.addView(tab, position, shouldExpand ? expandedTabLayoutParams : defaultTabLayoutParams);
+		tabsContainer.addView(tab, position, expandedTabLayoutParams);
 	}
-
+	
+	public void addNotice(int position, Drawable drawable){
+		View v = tabsContainer.getChildAt(position);
+		if (v instanceof LinearLayout) {
+			View parentView = ((ViewGroup) v).getChildAt(0);
+			View noticeView = ((ViewGroup) parentView).getChildAt(2);
+			if (noticeView instanceof ImageView) {
+				((ImageView) noticeView).setImageDrawable(drawable);
+			}
+		}
+	}
+	
+	public void removeNotice(int position){
+		View v = tabsContainer.getChildAt(position);
+		if (v instanceof LinearLayout) {
+			View parentView = ((ViewGroup) v).getChildAt(0);
+			View noticeView = ((ViewGroup) parentView).getChildAt(2);
+			if (noticeView instanceof ImageView) {
+				((ImageView) noticeView).setImageDrawable(null);
+			}
+		}
+	}
+	
 	private void updateTabStyles() {
 
 		for (int i = 0; i < tabCount; i++) {
 
 			View v = tabsContainer.getChildAt(i);
 			
-			v.setBackgroundColor(tabBackgroundColor);
+			if (i == selectedPosition) {
+				v.setBackgroundColor(tabBackgroundSelectColor);
+			}else{
+				v.setBackgroundColor(Color.TRANSPARENT);
+			}
 			
 			if (v instanceof LinearLayout) {
-				View childView = ((ViewGroup) v).getChildAt(0);
+				View parentView = ((ViewGroup) v).getChildAt(0);
+				View childView = ((ViewGroup) parentView).getChildAt(0);
 				
 				if (childView instanceof ImageView) {
 					ImageView imageView = (ImageView) childView;
@@ -174,7 +218,7 @@ public class UIViewSwitcher extends LinearLayout {
 					}
 				}
 				
-				childView = ((ViewGroup) v).getChildAt(1);
+				childView = ((ViewGroup) parentView).getChildAt(1);
 				
 				if (childView instanceof TextView) {
 
@@ -189,9 +233,97 @@ public class UIViewSwitcher extends LinearLayout {
 						textView.setTextColor(tabTextColor);
 					}
 				}
+				
+				childView = ((ViewGroup) parentView).getChildAt(2);
+				if (childView instanceof ImageView) {
+					if (autoNotice && i == selectedPosition) {
+						((ImageView) childView).setImageDrawable(null);
+					}
+				}
 			}
 		}
 
 	}
 
+	public OnPageChangeListener getDelegatePageListener() {
+		return delegatePageListener;
+	}
+
+	public void setDelegatePageListener(OnPageChangeListener delegatePageListener) {
+		this.delegatePageListener = delegatePageListener;
+	}
+
+	public boolean isAutoNotice() {
+		return autoNotice;
+	}
+
+	public void setAutoNotice(boolean autoNotice) {
+		this.autoNotice = autoNotice;
+	}
+
+	public int getTabTextColor() {
+		return tabTextColor;
+	}
+
+	public void setTabTextColor(int tabTextColor) {
+		this.tabTextColor = tabTextColor;
+	}
+
+	public int getTabTextSelectedColor() {
+		return tabTextSelectedColor;
+	}
+
+	public void setTabTextSelectedColor(int tabTextSelectedColor) {
+		this.tabTextSelectedColor = tabTextSelectedColor;
+	}
+
+	public int getTabBackgroundColor() {
+		return tabBackgroundColor;
+	}
+
+	public void setTabBackgroundColor(int tabBackgroundColor) {
+		this.tabBackgroundColor = tabBackgroundColor;
+		tabsContainer.setBackgroundColor(tabBackgroundColor);
+	}
+
+	public int getTabBackgroundSelectColor() {
+		return tabBackgroundSelectColor;
+	}
+
+	public void setTabBackgroundSelectColor(int tabBackgroundSelectColor) {
+		this.tabBackgroundSelectColor = tabBackgroundSelectColor;
+	}
+
+	public int getToplineColor() {
+		return toplineColor;
+	}
+
+	public void setToplineColor(int toplineColor) {
+		this.toplineColor = toplineColor;
+	}
+
+	public Typeface getTabTypeface() {
+		return tabTypeface;
+	}
+
+	public void setTabTypeface(Typeface tabTypeface) {
+		this.tabTypeface = tabTypeface;
+	}
+
+	public int getTabTypefaceStyle() {
+		return tabTypefaceStyle;
+	}
+
+	public void setTabTypefaceStyle(int tabTypefaceStyle) {
+		this.tabTypefaceStyle = tabTypefaceStyle;
+	}
+
+	public UISwitcherViewPager getPager() {
+		return pager;
+	}
+
+	public int getSelectedPosition() {
+		return selectedPosition;
+	}
+	
 }
