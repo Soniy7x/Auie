@@ -23,8 +23,8 @@ import android.util.Log;
 
 public class UEHttpClient {
 
-	private static final int SOCKET_TIMEOUT = 5 * 1000;
-	private static final int CONNECTION_TIMEOUT = 5 * 1000;
+	protected static final int SOCKET_TIMEOUT = 5 * 1000;
+	protected static final int CONNECTION_TIMEOUT = 5 * 1000;
 
 	private DefaultHttpClient httpClient = null;
 	
@@ -44,11 +44,11 @@ public class UEHttpClient {
 		sendRequest(context, getPostRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
-	private void sendRequest(Context context, HttpRequest params, UEHttpListener handler){
+	protected void sendRequest(Context context, HttpRequest params, UEHttpListener handler){
 		sendRequest(context, params, handler, CONNECTION_TIMEOUT, SOCKET_TIMEOUT);
 	}
 	
-	private void sendRequest(Context context, HttpRequest params, UEHttpListener handler, int connectionTime, int socketTime){
+	protected void sendRequest(Context context, HttpRequest params, UEHttpListener handler, int connectionTime, int socketTime){
 		UERequestHolder request = new UERequestHolder(params, handler);
 		UERequestTask task = new UERequestTask(request, this);
 		task.execute();
