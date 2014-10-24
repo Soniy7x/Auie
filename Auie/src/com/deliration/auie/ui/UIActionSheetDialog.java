@@ -85,6 +85,7 @@ public class UIActionSheetDialog extends PopupWindow{
 		if (title == null) {
 			titleTextView.setVisibility(View.GONE);
 		}else{
+			titleTextView.setVisibility(View.VISIBLE);
 			titleTextView.setText(title);
 		}
 		
