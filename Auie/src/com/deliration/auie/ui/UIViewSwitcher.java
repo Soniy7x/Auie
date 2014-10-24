@@ -29,6 +29,7 @@ public class UIViewSwitcher extends LinearLayout {
 	private int selectedPosition = 0;
 
 	private boolean autoNotice = true;
+	private boolean autoAnimate = true;
 	
 	private int tabPadding = 24;
 	private int tabTextSize = 12;
@@ -155,7 +156,7 @@ public class UIViewSwitcher extends LinearLayout {
 		tab.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				pager.setCurrentItem(position);
+				pager.setCurrentItem(position, autoAnimate);
 				selectedPosition = position;
 				updateTabStyles();
 				if (delegatePageListener != null) {
@@ -259,6 +260,10 @@ public class UIViewSwitcher extends LinearLayout {
 
 	public void setAutoNotice(boolean autoNotice) {
 		this.autoNotice = autoNotice;
+	}
+	
+	public void setAutoAnimate(boolean autoAnimate) {
+		this.autoAnimate = autoAnimate;
 	}
 
 	public int getTabTextColor() {
