@@ -19,17 +19,12 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.HorizontalScrollView;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.Locale;
 
 public class UIViewController extends HorizontalScrollView {
-
-	public interface IconTabProvider {
-		public int getPageIconResId(int position);
-	}
 
 	private static final int[] ATTRS = new int[] {
 		android.R.attr.textSize,
@@ -154,12 +149,8 @@ public class UIViewController extends HorizontalScrollView {
 		tabCount = pager.getAdapter().getCount();
 
 		for (int i = 0; i < tabCount; i++) {
-
-			if (pager.getAdapter() instanceof IconTabProvider) {
-				addIconTab(i, ((IconTabProvider) pager.getAdapter()).getPageIconResId(i));
-			} else {
-				addTextTab(i, pager.getAdapter().getPageTitle(i).toString());
-			}
+			
+			addTextTab(i, pager.getAdapter().getPageTitle(i).toString());
 
 		}
 
@@ -185,15 +176,6 @@ public class UIViewController extends HorizontalScrollView {
 		tab.setGravity(Gravity.CENTER);
 		tab.setSingleLine();
 		addTab(position, tab);
-	}
-
-	private void addIconTab(final int position, int resId) {
-
-		ImageButton tab = new ImageButton(getContext());
-		tab.setImageResource(resId);
-
-		addTab(position, tab);
-
 	}
 
 	private void addTab(final int position, View tab) {
