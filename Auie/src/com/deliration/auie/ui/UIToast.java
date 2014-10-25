@@ -36,7 +36,7 @@ public class UIToast extends Toast{
         return shapeDrawable;
 	}
 	
-	private static UIToast builder(Context context, CharSequence text, int color, long type){
+	private static UIToast builder(Context context, CharSequence text, int[] colors, long type){
 
 		UIToast result = new UIToast(context);
 		
@@ -49,11 +49,19 @@ public class UIToast extends Toast{
 		textView.setPadding(padding * 3, padding, padding * 3, padding);
 		textView.setTextSize(14);
 		textView.setText(text);
-		textView.setTextColor(Color.parseColor("#F8F8F8"));
+		if (colors.length > 0) {
+			textView.setTextColor(colors[0]);			
+		}else{
+			textView.setTextColor(Color.parseColor("#F8F8F8"));	
+		}
+		int background = Color.parseColor("#99000000");
+		if (colors.length > 1) {
+			background = colors[1];			
+		}
 		if (type == 0) {
-			rootLayout.setBackgroundDrawable(createBackground(color, padding * 4 + textView.getHeight()));
+			rootLayout.setBackgroundDrawable(createBackground(background, padding * 4 + textView.getHeight()));
 		}else {
-			rootLayout.setBackgroundColor(color);
+			rootLayout.setBackgroundColor(background);
 		}
 		rootLayout.addView(textView);
 		
@@ -63,35 +71,35 @@ public class UIToast extends Toast{
 	}
 	
 	public static void show(Context context, CharSequence text){
-		show(context, text, Color.parseColor("#99000000"));
+		show(context, text, TYPE_FILLET);
 	}
 	
-	public static void show(Context context, CharSequence text, int backgroundColor){
-		show(context, text, backgroundColor, TYPE_FILLET);
+	public static void show(Context context, CharSequence text, int[] colors){
+		show(context, text, colors, TYPE_FILLET);
 	}
 	
 	public static void show(Context context, CharSequence text, long type){
-		show(context, text, Color.parseColor("#99000000"), type);
+		show(context, text, new int[]{Color.parseColor("#F8F8F8"), Color.parseColor("#99000000")}, type);
 	}
 	
-	public static void show(Context context, CharSequence text, int backgroundColor, long type){
-		builder(context, text, backgroundColor, type).show();
+	public static void show(Context context, CharSequence text, int[] colors, long type){
+		builder(context, text, colors, type).show();
 	}
 	
 	public static void showTime(Context context, CharSequence text, int duration){
-		showTime(context, text, Color.parseColor("#99000000"), duration);
+		showTime(context, text, TYPE_FILLET, duration);
 	}
 	
-	public static void showTime(Context context, CharSequence text, int backgroundColor, int duration){
-		showTime(context, text, backgroundColor, TYPE_FILLET, duration);
+	public static void showTime(Context context, CharSequence text, int[] colors, int duration){
+		showTime(context, text, colors, TYPE_FILLET, duration);
 	}
 	
 	public static void showTime(Context context, CharSequence text, long type, int duration){
-		showTime(context, text, Color.parseColor("#99000000"), type, duration);
+		showTime(context, text, new int[]{Color.parseColor("#F8F8F8"), Color.parseColor("#99000000")}, type, duration);
 	}
 	
-	public static void showTime(Context context, CharSequence text, int backgroundColor, long type, int duration){
-		UIToast toast = builder(context, text, backgroundColor, type);
+	public static void showTime(Context context, CharSequence text, int[] colors, long type, int duration){
+		UIToast toast = builder(context, text, colors, type);
 		toast.setDuration(duration);
 		toast.show();
 	}
