@@ -28,19 +28,19 @@ public class UEHttpClient {
 
 	private DefaultHttpClient httpClient = null;
 	
-	public void get(Context context, String url, UEHttpParams params, UEHttpListener listener){
+	public void get(Context context, String url, UEHttpQueryParams params, UEHttpListener listener){
 		sendRequest(context, getGetRequest(url, params), listener);
 	}
 	
-	public void get(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
+	public void get(Context context, String url, UEHttpQueryParams params, UEHttpListener handler, int connectionTime, int socketTime){
 		sendRequest(context, getGetRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
-	public void post(Context context, String url, UEHttpParams params, UEHttpListener handler){
+	public void post(Context context, String url, UEHttpQueryParams params, UEHttpListener handler){
 		sendRequest(context, getPostRequest(url, params), handler);
 	}
 	
-	public void post(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
+	public void post(Context context, String url, UEHttpQueryParams params, UEHttpListener handler, int connectionTime, int socketTime){
 		sendRequest(context, getPostRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
@@ -54,7 +54,7 @@ public class UEHttpClient {
 		task.execute();
 	}
 	
-	private HttpGet getGetRequest(String url, UEHttpParams params){
+	private HttpGet getGetRequest(String url, UEHttpQueryParams params){
 		HttpGet get = null;
 		if(params == null){
 			get = new HttpGet(url);
@@ -64,7 +64,7 @@ public class UEHttpClient {
 		return get;
 	}
 	
-	private HttpPost getPostRequest(String url, UEHttpParams params){
+	private HttpPost getPostRequest(String url, UEHttpQueryParams params){
 		if(params == null){
 			return new HttpPost(url);
 		}
