@@ -21,10 +21,11 @@ import android.view.ViewGroup;
  */
 public abstract class UEFragment extends Fragment implements OnClickListener{
 
-	public final Activity activity = getActivity();
+	public Activity activity = null;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		activity = getActivity();
 		initializePrepare();
 		return initializeBegin(inflater, container, savedInstanceState);
 	}
