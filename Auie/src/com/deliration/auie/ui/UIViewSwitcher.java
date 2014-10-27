@@ -133,6 +133,7 @@ public class UIViewSwitcher extends LinearLayout {
 		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		params2.addRule(RelativeLayout.BELOW, 1);
 		params2.addRule(RelativeLayout.CENTER_HORIZONTAL);
+		params2.setMargins(0, 0, 0, 6);
 		TextView textView = new TextView(getContext());
 		textView.setLayoutParams(params2);
 		textView.setText(title);
