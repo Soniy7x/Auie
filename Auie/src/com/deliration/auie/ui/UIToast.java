@@ -36,7 +36,7 @@ public class UIToast extends Toast{
         return shapeDrawable;
 	}
 	
-	private static UIToast builder(Context context, CharSequence text, int[] colors, long type){
+	private static UIToast builder(Context context, Object text, int[] colors, long type){
 
 		UIToast result = new UIToast(context);
 		
@@ -48,7 +48,7 @@ public class UIToast extends Toast{
 		textView.setLayoutParams(getParams());
 		textView.setPadding(padding * 3, padding, padding * 3, padding);
 		textView.setTextSize(14);
-		textView.setText(text);
+		textView.setText(String.valueOf(text));
 		if (colors.length > 0) {
 			textView.setTextColor(colors[0]);			
 		}else{
@@ -70,35 +70,35 @@ public class UIToast extends Toast{
 		return result;
 	}
 	
-	public static void show(Context context, CharSequence text){
+	public static void show(Context context, Object text){
 		show(context, text, TYPE_FILLET);
 	}
 	
-	public static void show(Context context, CharSequence text, int[] colors){
+	public static void show(Context context, Object text, int[] colors){
 		show(context, text, colors, TYPE_FILLET);
 	}
 	
-	public static void show(Context context, CharSequence text, long type){
+	public static void show(Context context, Object text, long type){
 		show(context, text, new int[]{Color.parseColor("#F8F8F8"), Color.parseColor("#99000000")}, type);
 	}
 	
-	public static void show(Context context, CharSequence text, int[] colors, long type){
+	public static void show(Context context, Object text, int[] colors, long type){
 		builder(context, text, colors, type).show();
 	}
 	
-	public static void showTime(Context context, CharSequence text, int duration){
+	public static void showTime(Context context, Object text, int duration){
 		showTime(context, text, TYPE_FILLET, duration);
 	}
 	
-	public static void showTime(Context context, CharSequence text, int[] colors, int duration){
+	public static void showTime(Context context, Object text, int[] colors, int duration){
 		showTime(context, text, colors, TYPE_FILLET, duration);
 	}
 	
-	public static void showTime(Context context, CharSequence text, long type, int duration){
+	public static void showTime(Context context, Object text, long type, int duration){
 		showTime(context, text, new int[]{Color.parseColor("#F8F8F8"), Color.parseColor("#99000000")}, type, duration);
 	}
 	
-	public static void showTime(Context context, CharSequence text, int[] colors, long type, int duration){
+	public static void showTime(Context context, Object text, int[] colors, long type, int duration){
 		UIToast toast = builder(context, text, colors, type);
 		toast.setDuration(duration);
 		toast.show();
