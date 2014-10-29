@@ -34,6 +34,7 @@ public class UILoadingBar extends View {
 	private int[] colors = { Color.RED, Color.YELLOW};
 	private int speed = SPEED_NORMAL;
 	private int type = TYPE_SECTORE_ONE;
+	private Animation animation;
 
 	public UILoadingBar(Context context) {
 		super(context);
@@ -55,7 +56,7 @@ public class UILoadingBar extends View {
 		super.setBackgroundColor(Color.TRANSPARENT);
 		
 		LinearInterpolator interpolator = new LinearInterpolator();
-		Animation animation = new RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+		animation = new RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 		animation.setDuration(speed);
 		animation.setRepeatCount(-1);
 		animation.setRepeatCount(Animation.INFINITE);
@@ -111,7 +112,17 @@ public class UILoadingBar extends View {
 
 	public void setVisibility(int visibility) {
 		super.setVisibility(visibility);
-		clearAnimation();
+		switch (visibility) {
+		case VISIBLE:
+			setAnimation(animation);
+			break;
+		case INVISIBLE:
+		case GONE:
+			clearAnimation();
+			break;
+		default:
+			break;
+		}
 	};
 	
 	@SuppressLint("DrawAllocation")
