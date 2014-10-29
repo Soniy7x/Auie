@@ -109,6 +109,11 @@ public class UILoadingBar extends View {
 		setType(TYPE_NONE);
 	}
 
+	public void setVisibility(int visibility) {
+		super.setVisibility(visibility);
+		clearAnimation();
+	};
+	
 	@SuppressLint("DrawAllocation")
 	@Override
 	protected void onDraw(Canvas canvas) {
