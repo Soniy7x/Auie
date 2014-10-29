@@ -34,7 +34,7 @@ public class UILoadingBar extends View {
 	private int[] colors = { Color.RED, Color.YELLOW};
 	private int speed = SPEED_NORMAL;
 	private int type = TYPE_SECTORE_ONE;
- 	
+
 	public UILoadingBar(Context context) {
 		super(context);
 		createView();
@@ -44,14 +44,9 @@ public class UILoadingBar extends View {
 		super(context, attrs);
 		createView();
 	}
-
+	
 	public UILoadingBar(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		createView();
-	}
-	
-	public UILoadingBar(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);
 		createView();
 	}
 
@@ -104,30 +99,14 @@ public class UILoadingBar extends View {
 		this.type = type;
 	}
 	
-	public void setBackground(Drawable drawable){
-		super.setBackground(drawable);
-		setType(TYPE_NONE);
-	}
-	
-	public void setBackgroundResource(int resid){
-		super.setBackgroundResource(resid);
-		setType(TYPE_NONE);
-	}
-	
 	public void setBackgroundColor(int color){
 		super.setBackgroundColor(color);
-		setType(TYPE_NONE);
 		setColors(new int[]{color});
-	}
-	
-	@SuppressWarnings("deprecation")
-	public void setBackgroundDrawable(Drawable background){
-		super.setBackgroundDrawable(background);
-		setType(TYPE_NONE);
 	}
 	
 	public void setImage(Drawable drawable){
 		setBackground(drawable);
+		setType(TYPE_NONE);
 	}
 
 	@SuppressLint("DrawAllocation")
