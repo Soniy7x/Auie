@@ -1,7 +1,7 @@
 package org.auie.ui;
 
 import org.auie.utils.UEMethod;
-
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.Color;
@@ -50,19 +50,26 @@ public class UIViewSwitcher extends LinearLayout {
 	}
 	
 	public UIViewSwitcher(Context context) {
-		this(context, null);
+		super(context);
+		createView();
 	}
 
 	public UIViewSwitcher(Context context, AttributeSet attrs) {
-		this(context, attrs, 0);
+		super(context, attrs);
+		createView();
 	}
 
+	@SuppressLint("NewApi")
 	public UIViewSwitcher(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		
+		createView();
+	}
+	
+	private void createView(){
+
 		setBackgroundColor(Color.LTGRAY);
 		
-		LinearLayout rootLayout = new LinearLayout(context);
+		LinearLayout rootLayout = new LinearLayout(getContext());
 		rootLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		rootLayout.setOrientation(LinearLayout.VERTICAL);
 		
@@ -70,7 +77,7 @@ public class UIViewSwitcher extends LinearLayout {
 		view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, UEMethod.dp2px(getContext(), 0.5f)));
 		view.setBackgroundColor(toplineColor);
 		
-		tabsContainer = new LinearLayout(context);
+		tabsContainer = new LinearLayout(getContext());
 		tabsContainer.setOrientation(LinearLayout.HORIZONTAL);
 		tabsContainer.setBackgroundColor(tabBackgroundColor);
 		tabsContainer.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -80,7 +87,6 @@ public class UIViewSwitcher extends LinearLayout {
 		addView(rootLayout);
 		
 		expandedTabLayoutParams = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1.0f);
-
 	}
 
 	public void setViewPager(UIViewPager pager) {
@@ -158,7 +164,9 @@ public class UIViewSwitcher extends LinearLayout {
 		tab.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				pager.setEnableScroll(true);
 				pager.setCurrentItem(position, autoAnimate);
+				pager.setEnableScroll(false);
 				selectedPosition = position;
 				updateTabStyles();
 				if (delegatePageListener != null) {
