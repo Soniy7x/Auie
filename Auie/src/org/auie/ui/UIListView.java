@@ -4,7 +4,6 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import org.auie.R;
 import org.auie.utils.UEMethod;
 
 import android.annotation.SuppressLint;
@@ -479,7 +478,6 @@ public class UIListView extends ListView implements OnScrollListener{
 			params1.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 			mArrowImageView = new ImageView(getContext());
 			mArrowImageView.setLayoutParams(params1);
-			mArrowImageView.setImageResource(R.drawable.xlistview_arrow);
 			
 			mProgressBar = new UILoadingBar(getContext());
 			mProgressBar.setLayoutParams(params1);
