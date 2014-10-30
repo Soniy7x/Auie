@@ -24,7 +24,7 @@ public class UIViewSwitcher extends LinearLayout {
 	public OnPageChangeListener delegatePageListener;
 
 	private LinearLayout tabsContainer;
-	private UISwitcherViewPager pager;
+	private UIViewPager pager;
 
 	private int tabCount;
 	private int selectedPosition = 0;
@@ -83,7 +83,7 @@ public class UIViewSwitcher extends LinearLayout {
 
 	}
 
-	public void setViewPager(UISwitcherViewPager pager) {
+	public void setViewPager(UIViewPager pager) {
 		this.pager = pager;
 
 		if (pager.getAdapter() == null) {
@@ -325,7 +325,7 @@ public class UIViewSwitcher extends LinearLayout {
 		this.tabTypefaceStyle = tabTypefaceStyle;
 	}
 
-	public UISwitcherViewPager getPager() {
+	public UIViewPager getPager() {
 		return pager;
 	}
 
