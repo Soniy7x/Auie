@@ -19,6 +19,7 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -52,6 +53,8 @@ public class UIListView extends ListView implements OnScrollListener{
 	private boolean isFooterReady = false;
 	private float lastY = -1;
 	private OnScrollListener scrollListener;
+	private OnItemClickListener onItemClickListener;
+	private OnItemLongClickListener onItemLongClickListener;
 	private UIListViewListener listViewListener;
 	private int type = TYPE_BOTH;
 	
@@ -93,6 +96,8 @@ public class UIListView extends ListView implements OnScrollListener{
 			}
 		});
 		
+		super.setOnItemClickListener(new UIListViewOnItemClickListener());
+		super.setOnItemLongClickListener(new UIListViewOnItemLongClickListener());
 	}
 	
 	public void setType(int type){
@@ -188,7 +193,9 @@ public class UIListView extends ListView implements OnScrollListener{
 			listViewListener.onLoadMore();
 		}
 	}
+
 	
+
 	private void updateHeaderHeight(float delta) {
 		headerView.setVisiableHeight((int) delta + headerView.getVisiableHeight());
 		if (isCanRefresh() && !refreshing) { 
@@ -380,6 +387,16 @@ public class UIListView extends ListView implements OnScrollListener{
 		super.computeScroll();
 	}
 	
+
+	public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+		this.onItemClickListener = onItemClickListener;
+	}
+
+	public void setOnItemLongClickListener(
+			OnItemLongClickListener onItemLongClickListener) {
+		this.onItemLongClickListener = onItemLongClickListener;
+	}
+
 	@Override
 	public void setOnScrollListener(OnScrollListener l) {
 		scrollListener = l;
@@ -415,6 +432,30 @@ public class UIListView extends ListView implements OnScrollListener{
 		public void onRefresh();
 		public void onLoadMore();
 	}
+	
+	class UIListViewOnItemClickListener implements OnItemClickListener{
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			if (onItemClickListener != null) {
+				onItemClickListener.onItemClick(parent, view, position - getHeaderViewsCount(), id);
+			}
+		}
+		
+	}
+	
+	class UIListViewOnItemLongClickListener implements OnItemLongClickListener{
+
+		@Override
+		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+			if (onItemLongClickListener != null) {
+				onItemLongClickListener.onItemLongClick(parent, view, position - getHeaderViewsCount(), id);
+			}
+			return false;
+		}
+	}
+	
+	public 
 	
 	/**------------------------------------------------
 	 *					HeaderView					  *
