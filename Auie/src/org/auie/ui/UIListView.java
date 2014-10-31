@@ -52,6 +52,7 @@ public class UIListView extends ListView implements OnScrollListener{
 	private boolean loading = false;
 	private boolean isFooterReady = false;
 	private float lastY = -1;
+	private UIListViewAdpater adpater;
 	private OnScrollListener scrollListener;
 	private OnItemClickListener onItemClickListener;
 	private OnItemLongClickListener onItemLongClickListener;
@@ -318,13 +319,21 @@ public class UIListView extends ListView implements OnScrollListener{
 		}
 	}
 	
-	@Override
 	public void setAdapter(ListAdapter adapter) {
 		if (isFooterReady == false) {
 			isFooterReady = true;
 			addFooterView(footerView);
 		}
 		super.setAdapter(adapter);
+	}
+	
+	public void setUIListViewAdpater(UIListViewAdpater adpater) {
+		this.adpater = adpater;
+		setAdapter(adpater);
+	}
+	
+	public UIListViewAdpater getUIListViewAdpater(){
+		return this.adpater;
 	}
 	
 	@SuppressLint("ClickableViewAccessibility")
