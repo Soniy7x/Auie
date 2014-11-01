@@ -77,6 +77,7 @@ public class UIListView extends ListView implements OnScrollListener{
 	private OnScrollListener scrollListener;
 	private OnItemClickListener onItemClickListener;
 	private OnItemLongClickListener onItemLongClickListener;
+	private OnUITouchListener onTouchListener;
 	private UIListViewListener listViewListener;
 	private int type = TYPE_BOTH;
 	
@@ -175,8 +176,8 @@ public class UIListView extends ListView implements OnScrollListener{
 	}
 
 	private void invokeOnScrolling() {
-		if (scrollListener instanceof UIScrollListener) {
-			UIScrollListener listener = (UIScrollListener) scrollListener;
+		if (scrollListener instanceof OnUIScrollListener) {
+			OnUIScrollListener listener = (OnUIScrollListener) scrollListener;
 			listener.onScrolling(this);
 		}
 	}
@@ -457,18 +458,13 @@ public class UIListView extends ListView implements OnScrollListener{
 			break;
 		case MotionEvent.ACTION_UP:
 			if (mTouchState == TOUCH_STATE_X) {
-				if (mTouchView != null) {
-					mTouchView.onSwipe(ev);
-					if (!mTouchView.isShow()) {
-						mTouchPosition = -1;
-						mTouchView = null;
-					}
-				}
+				onTouchHorizontal(ev);
 				ev.setAction(MotionEvent.ACTION_CANCEL);
 				super.onTouchEvent(ev);
 				return true;
 			}
 		default:
+			//TODO
 			if (getFirstVisiblePosition() == 0) {
 				if (isCanRefresh() && headerView.getVisiableHeight() > headerViewHeight) {
 					refreshing = true;
@@ -488,6 +484,21 @@ public class UIListView extends ListView implements OnScrollListener{
 			break;
 		}
 		return super.onTouchEvent(ev);
+	}
+	
+	private void onTouchHorizontal(MotionEvent event){
+		if (mTouchView != null) {
+			mTouchView.onSwipe(event);
+			if (!mTouchView.isShow()) {
+				mTouchPosition = -1;
+				mTouchView = null;
+			}
+		}
+		if (pressX - event.getX() > DISTANCE_X) {
+			onTouchListener.onTouchLeft();
+		}else {
+			onTouchListener.onTouchRight();
+		}
 	}
 	
 	@Override
@@ -556,6 +567,14 @@ public class UIListView extends ListView implements OnScrollListener{
 		this.mOnMenuClickListener = mOnMenuItemClickListener;
 	}
 
+	public OnUITouchListener getOnUITouchListener() {
+		return onTouchListener;
+	}
+
+	public void setOnUITouchListener(OnUITouchListener onTouchListener) {
+		this.onTouchListener = onTouchListener;
+	}
+
 	/**
 	 * interface
 	 */
@@ -563,13 +582,18 @@ public class UIListView extends ListView implements OnScrollListener{
 		boolean onMenuClick(int position, Menu menu, int index);
 	}
 	
-	public interface UIScrollListener extends OnScrollListener {
-		public void onScrolling(View view);
+	public interface OnUIScrollListener extends OnScrollListener {
+		void onScrolling(View view);
 	}
 
 	public interface UIListViewListener {
-		public void onRefresh();
-		public void onLoadMore();
+		void onRefresh();
+		void onLoadMore();
+	}
+	
+	public interface OnUITouchListener{
+		void onTouchLeft();
+		void onTouchRight();
 	}
 	
 	/**
