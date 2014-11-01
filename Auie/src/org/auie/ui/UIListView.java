@@ -4,16 +4,23 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import org.auie.ui.UIListViewItem.Item;
+import org.auie.ui.UIListViewItem.Menu;
+import org.auie.ui.UIListViewItem.MenuLayout;
+import org.auie.ui.UIListViewItem.MenuView;
 import org.auie.utils.UEMethod;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
@@ -23,14 +30,16 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
+import android.widget.WrapperListAdapter;
 import android.widget.AbsListView.OnScrollListener;
-import android.widget.ListView;
 
+@SuppressLint("NewApi")
 public class UIListView extends ListView implements OnScrollListener{
-
+	
 	private final static int SCROLLBACK_HEADER = 0;
 	private final static int SCROLLBACK_FOOTER = 1;
 
@@ -43,6 +52,13 @@ public class UIListView extends ListView implements OnScrollListener{
 	public final static int TYPE_ONLY_UP_LOADMORD = 94;
 	public final static int TYPE_BOTH = 95;
 	
+	private static final int TOUCH_STATE_NONE = 0;
+	private static final int TOUCH_STATE_X = 1;
+	private static final int TOUCH_STATE_Y = 2;
+	
+	private int DISTANCE_X = 3;
+	private int DISTANCE_Y = 5;
+	
 	private Scroller scroller;
 	private HeaderView headerView;
 	private LinearLayout headerViewContent;
@@ -52,7 +68,6 @@ public class UIListView extends ListView implements OnScrollListener{
 	private boolean loading = false;
 	private boolean isFooterReady = false;
 	private float lastY = -1;
-	private UIListViewAdpater adpater;
 	private OnScrollListener scrollListener;
 	private OnItemClickListener onItemClickListener;
 	private OnItemLongClickListener onItemLongClickListener;
@@ -62,23 +77,41 @@ public class UIListView extends ListView implements OnScrollListener{
 	private int totalItemCount;
 	private int scrollBack;
 	
+	private float pressX;
+	private float pressY;
+	private int mTouchState;
+	private int mTouchPosition;
+	private MenuLayout mTouchView;
+	private UIListViewItem.ItemControl mItemControl;
+	private OnMenuItemClickListener mOnMenuItemClickListener;
+	
 	public UIListView(Context context) {
 		super(context);
-		createView();
-	}
-	
-	public UIListView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		createView();
-	}
-	
-	public UIListView(Context context, AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
-		createView();
+		init();
 	}
 
-	private void createView(){
+	public UIListView(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		init();
+	}
+
+	public UIListView(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
+		init();
+	}
+
+	public UIListView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+		super(context, attrs, defStyleAttr, defStyleRes);
+		init();
+	}
+	
+	private void init(){
+		
 		super.setOnScrollListener(this);
+		
+		this.mTouchState = TOUCH_STATE_NONE;
+		DISTANCE_X = UEMethod.dp2px(getContext(), DISTANCE_X);
+		DISTANCE_Y = UEMethod.dp2px(getContext(), DISTANCE_Y);
 		scroller = new Scroller(getContext(), new DecelerateInterpolator());
 		
 		headerView = new HeaderView(getContext());
@@ -100,7 +133,7 @@ public class UIListView extends ListView implements OnScrollListener{
 		super.setOnItemClickListener(new UIListViewOnItemClickListener());
 		super.setOnItemLongClickListener(new UIListViewOnItemLongClickListener());
 	}
-	
+
 	public void setType(int type){
 		this.type = type;
 		loading = false;
@@ -319,37 +352,94 @@ public class UIListView extends ListView implements OnScrollListener{
 		}
 	}
 	
+	public UIListViewItem.ItemControl getItemControl() {
+		return mItemControl;
+	}
+
+	public void setItemControl(UIListViewItem.ItemControl itemControl) {
+		this.mItemControl = itemControl;
+	}
+	
+	@Override
 	public void setAdapter(ListAdapter adapter) {
 		if (isFooterReady == false) {
 			isFooterReady = true;
 			addFooterView(footerView);
 		}
-		super.setAdapter(adapter);
-	}
-	
-	public void setUIListViewAdpater(UIListViewAdpater adpater) {
-		this.adpater = adpater;
-		setAdapter(adpater);
-	}
-	
-	public UIListViewAdpater getUIListViewAdpater(){
-		return this.adpater;
+		super.setAdapter(new UIListAdapter(adapter) {
+			@Override
+			public void createMenu(Menu menu) {
+				if (mItemControl != null) {
+					mItemControl.createMenu(menu);
+				}
+			}
+			@Override
+			public void onItemClick(MenuView view, Menu menu, int index) {
+				boolean flag = false;
+				if (mOnMenuItemClickListener != null) {
+					flag = mOnMenuItemClickListener.onMenuItemClick(view.getPosition(), menu, index);
+				}
+				if (mTouchView != null && !flag) {
+					mTouchView.smoothCloseMenu();
+				}
+			}
+		});
 	}
 	
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
-		if (type == TYPE_NONE) {
-			return super.onTouchEvent(ev);
+		if (ev.getAction() != MotionEvent.ACTION_DOWN && mTouchView == null){
+			return super.onTouchEvent(ev);			
 		}
-		if (lastY == -1) {
-			lastY = ev.getRawY();
-		}
-		switch (ev.getAction()) {
+		int action = MotionEventCompat.getActionMasked(ev);
+		action = ev.getAction();
+		switch (action) {
 		case MotionEvent.ACTION_DOWN:
+			int oldPos = mTouchPosition;
 			lastY = ev.getRawY();
+			pressX = ev.getX();
+			pressY = ev.getY();
+			mTouchState = TOUCH_STATE_NONE;
+			mTouchPosition = pointToPosition((int) ev.getX(), (int) ev.getY());
+			if (mTouchPosition == oldPos && mTouchView != null && mTouchView.isShow()) {
+				mTouchState = TOUCH_STATE_X;
+				mTouchView.onSwipe(ev);
+				return true;
+			}
+
+			View view = getChildAt(mTouchPosition - getFirstVisiblePosition());
+
+			if (mTouchView != null && mTouchView.isShow()) {
+				mTouchView.smoothCloseMenu();
+				mTouchView = null;
+				return super.onTouchEvent(ev);
+			}
+			if (view instanceof MenuLayout) {
+				mTouchView = (MenuLayout) view;
+			}
+			if (mTouchView != null) {
+				mTouchView.onSwipe(ev);
+			}
 			break;
 		case MotionEvent.ACTION_MOVE:
+			float dy = Math.abs((ev.getY() - pressY));
+			float dx = Math.abs((ev.getX() - pressX));
+			if (mTouchState == TOUCH_STATE_X) {
+				if (mTouchView != null) {
+					mTouchView.onSwipe(ev);
+				}
+				getSelector().setState(new int[] { 0 });
+				ev.setAction(MotionEvent.ACTION_CANCEL);
+				super.onTouchEvent(ev);
+				return true;
+			} else if (mTouchState == TOUCH_STATE_NONE) {
+				if (Math.abs(dy) > DISTANCE_Y) {
+					mTouchState = TOUCH_STATE_Y;
+				} else if (dx > DISTANCE_X) {
+					mTouchState = TOUCH_STATE_X;
+				}
+			}
 			final float deltaY = ev.getRawY() - lastY;
 			lastY = ev.getRawY();
 			if (isCanRefresh() && getFirstVisiblePosition() == 0 && (headerView.getVisiableHeight() > 0 || deltaY > 0)) {
@@ -359,8 +449,20 @@ public class UIListView extends ListView implements OnScrollListener{
 				updateFooterHeight(-deltaY / OFFSET_RADIO);
 			}
 			break;
+		case MotionEvent.ACTION_UP:
+			if (mTouchState == TOUCH_STATE_X) {
+				if (mTouchView != null) {
+					mTouchView.onSwipe(ev);
+					if (!mTouchView.isShow()) {
+						mTouchPosition = -1;
+						mTouchView = null;
+					}
+				}
+				ev.setAction(MotionEvent.ACTION_CANCEL);
+				super.onTouchEvent(ev);
+				return true;
+			}
 		default:
-			lastY = -1;
 			if (getFirstVisiblePosition() == 0) {
 				if (isCanRefresh() && headerView.getVisiableHeight() > headerViewHeight) {
 					refreshing = true;
@@ -396,7 +498,6 @@ public class UIListView extends ListView implements OnScrollListener{
 		super.computeScroll();
 	}
 	
-
 	public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
 		this.onItemClickListener = onItemClickListener;
 	}
@@ -430,9 +531,32 @@ public class UIListView extends ListView implements OnScrollListener{
 		listViewListener = l;
 	}
 	
+	public void smoothOpenMenu(int position) {
+		if (position >= getFirstVisiblePosition()
+				&& position <= getLastVisiblePosition()) {
+			View view = getChildAt(position - getFirstVisiblePosition());
+			if (view instanceof MenuLayout) {
+				mTouchPosition = position;
+				if (mTouchView != null && mTouchView.isShow()) {
+					mTouchView.smoothCloseMenu();
+				}
+				mTouchView = (MenuLayout) view;
+				mTouchView.smoothOpenMenu();
+			}
+		}
+	}
+	
+	public void setOnMenuItemClickListener(OnMenuItemClickListener mOnMenuItemClickListener) {
+		this.mOnMenuItemClickListener = mOnMenuItemClickListener;
+	}
+
 	/**
-	 * 
+	 * interface
 	 */
+	public interface OnMenuItemClickListener {
+		boolean onMenuItemClick(int position, Menu menu, int index);
+	}
+	
 	public interface UIScrollListener extends OnScrollListener {
 		public void onScrolling(View view);
 	}
@@ -442,6 +566,9 @@ public class UIListView extends ListView implements OnScrollListener{
 		public void onLoadMore();
 	}
 	
+	/**
+	 *  Listener
+	 */
 	class UIListViewOnItemClickListener implements OnItemClickListener{
 
 		@Override
@@ -464,13 +591,11 @@ public class UIListView extends ListView implements OnScrollListener{
 		}
 	}
 	
-	public 
-	
-	/**------------------------------------------------
-	 *					HeaderView					  *
-	 ------------------------------------------------**/
+	/**
+	 * HeaderView
+	 */
 	class HeaderView extends LinearLayout {
-	
+		
 		private final static int ROTATE_ANIM_DURATION = 180;
 	
 		private final static int STATE_NORMAL = 0;
@@ -636,6 +761,9 @@ public class UIListView extends ListView implements OnScrollListener{
 		}
 	}
 	
+	/**
+	 * FooterView
+	 */
 	class FooterView extends LinearLayout {
 		
 		private final static int STATE_NORMAL = 0;
@@ -717,39 +845,135 @@ public class UIListView extends ListView implements OnScrollListener{
 			return lp.bottomMargin;
 		}
 		
-		/**
-		 * normal status
-		 */
 		public void normal() {
 			mHintTextView.setVisibility(View.VISIBLE);
 			mProgressBar.setVisibility(View.GONE);
 		}
 		
-		
-		/**
-		 * loading status 
-		 */
 		public void loading() {
 			mHintTextView.setVisibility(View.GONE);
 			mProgressBar.setVisibility(View.VISIBLE);
 		}
 		
-		/**
-		 * hide footer when disable pull load more
-		 */
 		public void hide() {
 			LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)mContainer.getLayoutParams();
 			lp.height = 0;
 			mContainer.setLayoutParams(lp);
 		}
 		
-		/**
-		 * show footer
-		 */
 		public void show() {
 			LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)mContainer.getLayoutParams();
 			lp.height = LayoutParams.WRAP_CONTENT;
 			mContainer.setLayoutParams(lp);
 		}	
+	}
+	
+	/**
+	 *  UIListAdapter
+	 */
+	protected class UIListAdapter implements WrapperListAdapter, UIListViewItem.OnItemClickListener{
+
+		private ListAdapter mAdapter;
+		private OnMenuItemClickListener onMenuItemClickListener;
+		
+		public UIListAdapter(ListAdapter adapter) {
+			mAdapter = adapter;
+		}
+		
+		@Override
+		public boolean areAllItemsEnabled() {
+			return mAdapter.areAllItemsEnabled();
+		}
+
+		@Override
+		public boolean isEnabled(int position) {
+			return mAdapter.isEnabled(position);
+		}
+
+		@Override
+		public void registerDataSetObserver(DataSetObserver observer) {
+			mAdapter.registerDataSetObserver(observer);
+		}
+
+		@Override
+		public void unregisterDataSetObserver(DataSetObserver observer) {
+			mAdapter.unregisterDataSetObserver(observer);
+		}
+
+		@Override
+		public int getCount() {
+			return mAdapter.getCount();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return mAdapter.getItem(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return mAdapter.getItemId(position);
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			MenuLayout menuLayout;
+			if (convertView == null) {
+				View contentView = mAdapter.getView(position, convertView, parent);
+				Menu menu = new Menu(getContext());
+				createMenu(menu);
+				MenuView menuView = new MenuView(menu);
+				menuView.setOnItemClickListener(this);
+				menuLayout = new MenuLayout(contentView, menuView);
+			} else {
+				menuLayout = (MenuLayout) convertView;
+				menuLayout.hideMenu();
+				mAdapter.getView(position, menuLayout.getContentView(), parent);
+			}
+			menuLayout.setPosition(position);
+			return menuLayout;
+		}
+
+		public void createMenu(Menu menu) {
+			menu.addMenuItem(new Item("Item 1"));
+			menu.addMenuItem(new Item("Item 2"));
+		}
+
+		@Override
+		public void onItemClick(MenuView view, Menu menu, int index) {
+			if (onMenuItemClickListener != null) {
+				onMenuItemClickListener.onMenuItemClick(view.getPosition(), menu, index);
+			}
+		}
+		
+		public void setOnMenuItemClickListener(OnMenuItemClickListener onMenuItemClickListener) {
+			this.onMenuItemClickListener = onMenuItemClickListener;
+		}
+
+		@Override
+		public boolean hasStableIds() {
+			return mAdapter.hasStableIds();
+		}
+
+		@Override
+		public int getItemViewType(int position) {
+			return mAdapter.getItemViewType(position);
+		}
+
+		@Override
+		public int getViewTypeCount() {
+			return mAdapter.getViewTypeCount();
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return mAdapter.isEmpty();
+		}
+
+		@Override
+		public ListAdapter getWrappedAdapter() {
+			return mAdapter;
+		}
+		
 	}
 }

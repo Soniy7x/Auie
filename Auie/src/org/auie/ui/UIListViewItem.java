@@ -1,356 +1,445 @@
 package org.auie.ui;
 
-import android.annotation.SuppressLint;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.auie.utils.UEMethod;
+
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.support.v4.view.GestureDetectorCompat;
+import android.support.v4.widget.ScrollerCompat;
+import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.View.OnClickListener;
 import android.view.ViewTreeObserver.OnPreDrawListener;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.TranslateAnimation;
+import android.widget.AbsListView;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-@SuppressLint("NewApi")
-public class UIListViewItem extends RelativeLayout implements OnGestureListener,OnTouchListener{
-	
-	public static final int ACTION_DELETE = 1;
-	public static final int ACTION_DELETE_ONE = 2;
-	public static final int ACTION_DELETE_TWO = 3;
-	public static final int ACTION_CUSTOMER = 9;
-	
-	private String actionString = "按钮1";
-	private String otherString = "按钮2";
-	private int actionColor = Color.parseColor("#009EFC");
-	private int otherColor = Color.parseColor("#BDBFBE");
-	private int type = ACTION_DELETE;
-	
-	private LinearLayout actionView;
-	private LinearLayout contentView;
-	
-	private GestureDetector gesture;
-	
-	private UIButton deleteButton;
-	private UIButton actionButton;
-	private UIButton otherButton;
-	
-	private View customerView;
-	
-	private boolean showAction = false;
-	private boolean showActionEnable = true;
-	
-	public UIListViewItem(Context context) {
-		super(context);
-		createView();
-	}
-	
-	public UIListViewItem(Context context, View view) {
-		super(context);
-		createView();
-		setContentView(view);
-	}
-	
-	public UIListViewItem(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		createView();
-	}
-	
-	public UIListViewItem(Context context, AttributeSet attrs, int defStyleAttr) {
-		this(context, attrs, defStyleAttr, 0);
-	}
-	
-	public UIListViewItem(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);
-		createView();
-	}
-	
-	private void createView(){
-		
-		gesture = new GestureDetector(getContext(), this);
-		
-		contentView = new LinearLayout(getContext());
-		contentView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-		actionView = new LinearLayout(getContext());
-		actionView.setOrientation(LinearLayout.HORIZONTAL);
-		actionView.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
+public class UIListViewItem {
+
+	public interface ItemControl{
+		void createMenu(Menu menu);
+	}
+
+	protected interface OnItemClickListener {
+		void onItemClick(MenuView view, Menu menu, int index);
+	}
+	
+	protected static class MenuView extends LinearLayout implements OnClickListener {
+		
+		private MenuLayout mMenuLayout;
+		private Menu menu;
+		private OnItemClickListener onItemClickListener;
+		
+		private ItemWidthType widthType = ItemWidthType.ITEM_WIDTH_DEFAULT;
+		private int position;
+		private int id = 0;
+		
+		public MenuView(Context context) {
+			super(context);
+		}
+		
+		public MenuView(Menu menu) {
+			super(menu.getContext());
+			this.menu = menu;
+			for (Item item : menu.getMenuItems()) {
+				addItem(item, id++);
+			}
+		}
+		
+		public void setItemWidth(ItemWidthType widthType){
+			this.widthType = widthType;
+		}
+		
+		private void addItem(Item item, int id) {
+			LayoutParams params = new LayoutParams(0, LayoutParams.MATCH_PARENT);
+			final LinearLayout parent = new LinearLayout(getContext());
+			parent.setId(id);
+			parent.setGravity(Gravity.CENTER);
+			parent.setOrientation(LinearLayout.VERTICAL);
+			parent.setLayoutParams(params);
+			parent.setBackgroundColor(item.backgroundColor);
+			parent.setOnClickListener(this);
+			parent.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
+				
+				@Override
+				public boolean onPreDraw() {
+					parent.getViewTreeObserver().removeOnPreDrawListener(this);
+					LayoutParams params = new LayoutParams((int) (getHeight() * widthType.type), LayoutParams.MATCH_PARENT);
+					parent.setLayoutParams(params);
+					return false;
+				}
+			});
+			addView(parent);
+			if (item.icon != null) {
+				ImageView imageView = new ImageView(getContext());
+				imageView.setImageDrawable(item.icon);
+				parent.addView(imageView);
+				return;
+			}
+			if (!TextUtils.isEmpty(item.title)) {
+				TextView textView = new TextView(getContext());
+				textView.setText(item.title);
+				textView.setTextSize(item.titleSize);
+				textView.setTextColor(item.titleColor);
+				textView.setGravity(Gravity.CENTER);
+				textView.setTypeface(item.typeface);
+				parent.addView(textView);
+			}
 			
+		}
+		
+		@Override
+		public void onClick(View v) {
+			if (onItemClickListener != null && mMenuLayout.isShow()) {
+				onItemClickListener.onItemClick(this, menu, v.getId());
+			}
+		}
+
+		public OnItemClickListener getOnItemClickListener() {
+			return onItemClickListener;
+		}
+
+		public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+			this.onItemClickListener = onItemClickListener;
+		}
+
+		public MenuLayout getMenuLayout() {
+			return mMenuLayout;
+		}
+
+		public void setMenuLayout(MenuLayout mMenuLayout) {
+			this.mMenuLayout = mMenuLayout;
+		}
+		
+		public int getPosition() {
+			return position;
+		}
+
+		public void setPosition(int position) {
+			this.position = position;
+		}
+		
+		public enum ItemWidthType {
+			
+			ITEM_WIDTH_DEFAULT(1.3F), ITEM_WIDTH_MIN(1F), ITEM_WIDTH_MAX(1.6F);
+
+			private float type;
+
+			private ItemWidthType(float type) {
+				this.type = type;
+			}
+
+			public float getName() {
+				return type;
+			}
+		}
+	}
+	
+	protected static class MenuLayout extends FrameLayout{
+
+		private static final int CONTENT_VIEW_ID = 1;
+		private static final int MENU_VIEW_ID = 2;
+		private static final int STATE_HIDE = 0;
+		private static final int STATE_SHOW = 1;
+		
+		private int MIN_FLING = UEMethod.dp2px(getContext(), 15);
+		private int MAX_VELOCITYX = UEMethod.dp2px(getContext(), 500);
+		
+		private GestureDetectorCompat mGestureDetector;
+		private View mContentView;
+		private MenuView mMenuView;
+		private ScrollerCompat mShowScroller;
+		private ScrollerCompat mHideScroller;
+		
+		private boolean isFling;
+		private int baseX;
+		private int pressX;
+		private int position;
+		private int state = STATE_HIDE;
+		
+		private MenuLayout(Context context) {
+			super(context);
+		}
+		
+		private MenuLayout(Context context, AttributeSet attrs) {
+			super(context, attrs);
+		}
+		
+		public MenuLayout(View contentView, MenuView menuView) {
+			super(contentView.getContext());
+			this.mContentView = contentView;
+			this.mMenuView = menuView;
+			this.mMenuView.setMenuLayout(this);
+			setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			mGestureDetector = new GestureDetectorCompat(getContext(), mGestureListener);
+			LayoutParams contentParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+			mContentView.setLayoutParams(contentParams);
+			if (mContentView.getId() < 1) {
+				mContentView.setId(CONTENT_VIEW_ID);
+			}
+			mMenuView.setId(MENU_VIEW_ID);
+			mMenuView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+			addView(mContentView);
+			addView(mMenuView);
+			mShowScroller = ScrollerCompat.create(getContext());
+			mHideScroller = ScrollerCompat.create(getContext());
+		}
+		
+		public boolean isShow() {
+			return state == STATE_SHOW;
+		}
+		
+		private void swipe(int dis) {
+			if (dis > mMenuView.getWidth()) {
+				dis = mMenuView.getWidth();
+			}
+			if (dis < 0) {
+				dis = 0;
+			}
+			mContentView.layout(-dis, mContentView.getTop(), mContentView.getWidth() - dis, getMeasuredHeight());
+			mMenuView.layout(mContentView.getWidth() - dis, mMenuView.getTop(), mContentView.getWidth() + mMenuView.getWidth() - dis, mMenuView.getBottom());
+		}
+
+		public boolean onSwipe(MotionEvent event) {
+			mGestureDetector.onTouchEvent(event);
+			switch (event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+				pressX = (int) event.getX();
+				isFling = false;
+				break;
+			case MotionEvent.ACTION_MOVE:
+				int dis = (int) (pressX - event.getX());
+				if (state == STATE_SHOW) {
+					dis += mMenuView.getWidth();
+				}
+				swipe(dis);
+				break;
+			case MotionEvent.ACTION_UP:
+				if (isFling || (pressX - event.getX()) > (mMenuView.getWidth() / 2)) {
+					smoothOpenMenu();
+				} else {
+					smoothCloseMenu();
+					return false;
+				}
+				break;
+			}
+			return true;
+		}
+		
+		@Override
+		public void computeScroll() {
+			if (state == STATE_SHOW) {
+				if (mShowScroller.computeScrollOffset()) {
+					swipe(mShowScroller.getCurrX());
+					postInvalidate();
+				}
+			} else {
+				if (mHideScroller.computeScrollOffset()) {
+					swipe(baseX - mHideScroller.getCurrX());
+					postInvalidate();
+				}
+			}
+		}
+		
+		public void smoothCloseMenu() {
+			state = STATE_HIDE;
+			baseX = -mContentView.getLeft();
+			mHideScroller.startScroll(0, 0, baseX, 0, 350);
+			postInvalidate();
+		}
+		
+		public void smoothOpenMenu() {
+			state = STATE_SHOW;
+			mShowScroller.startScroll(-mContentView.getLeft(), 0, mMenuView.getWidth(), 0, 350);
+			postInvalidate();
+		}
+		
+		public void hideMenu() {
+			if (mHideScroller.computeScrollOffset()) {
+				mHideScroller.abortAnimation();
+			}
+			if (state == STATE_SHOW) {
+				state = STATE_HIDE;
+				swipe(0);
+			}
+		}
+		
+		public void showMenu() {
+			if (state == STATE_HIDE) {
+				state = STATE_SHOW;
+				swipe(mMenuView.getWidth());
+			}
+		}
+		
+		public View getContentView() {
+			return mContentView;
+		}
+
+		public MenuView getMenuView() {
+			return mMenuView;
+		}
+
+		public void setMenuHeight(int measuredHeight) {
+			LayoutParams params = (LayoutParams) mMenuView.getLayoutParams();
+			if (params.height != measuredHeight) {
+				params.height = measuredHeight;
+				mMenuView.setLayoutParams(mMenuView.getLayoutParams());
+			}
+		}
+		
+		@Override
+		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+			mMenuView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY));
+		}
+		
+		@Override
+		protected void onLayout(boolean changed, int l, int t, int r, int b) {
+			mContentView.layout(0, 0, getMeasuredWidth(), mContentView.getMeasuredHeight());
+			mMenuView.layout(getMeasuredWidth(), 0, getMeasuredWidth() + mMenuView.getMeasuredWidth(), mContentView.getMeasuredHeight());
+		}
+		
+		public int getPosition() {
+			return position;
+		}
+
+		public void setPosition(int position) {
+			this.position = position;
+			mMenuView.setPosition(position);
+		}
+
+		private OnGestureListener mGestureListener = new SimpleOnGestureListener() {
 			@Override
-			public boolean onPreDraw() {
-				actionView.getViewTreeObserver().removeOnPreDrawListener(this);
-				setType(type);
-				return false;
+			public boolean onDown(MotionEvent e) {
+				isFling = false;
+				return true;
 			}
-		});
-		
-		addView(contentView);
-		addView(actionView);
-	}
 
-	private void createActionView(){
-		
-		actionView.removeAllViews();
-		
-		
-		int width = getHeight() * (type < 4 ? type : 3);
-		
-		LayoutParams params = new LayoutParams(width, getHeight());
-		params.addRule(ALIGN_PARENT_RIGHT, TRUE);
-		params.setMargins(0, 0,  -width, 0);
-		actionView.setLayoutParams(params);
-		switch (type) {
-		case ACTION_CUSTOMER:
-			customerView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-			actionView.addView(customerView);
-			break;
-		case ACTION_DELETE_TWO:
-			otherButton = new UIButton(getContext());
-			otherButton.setRadius(0);
-			otherButton.setText(otherString);
-			otherButton.setTextColor(Color.WHITE);
-			otherButton.setBackgroundColor(otherColor);
-			otherButton.setLayoutParams(new LayoutParams(getHeight(), getHeight()));
-		case ACTION_DELETE_ONE:
-			actionButton = new UIButton(getContext());
-			actionButton.setRadius(0);
-			actionButton.setText(actionString);
-			actionButton.setTextColor(Color.WHITE);
-			actionButton.setBackgroundColor(actionColor);
-			actionButton.setLayoutParams(new LayoutParams(getHeight(), getHeight()));
-			
-		default:
-			deleteButton = new UIButton(getContext());
-			deleteButton.setRadius(0);
-			deleteButton.setText("删除");
-			deleteButton.setTextColor(Color.WHITE);
-			deleteButton.setBackgroundColor(Color.parseColor("#F24535"));
-			deleteButton.setLayoutParams(new LayoutParams(getHeight(), getHeight()));
-			break;
-		}
-		
-		if (otherButton != null) {
-			actionView.addView(otherButton);
-		}
-		if (actionButton != null) {
-			actionView.addView(actionButton);
-		}
-		if (deleteButton != null) {
-			actionView.addView(deleteButton);
-		}
+			@Override
+			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+				if ((e1.getX() - e2.getX()) > MIN_FLING && velocityX < MAX_VELOCITYX) {
+					isFling = true;
+				}
+				return super.onFling(e1, e2, velocityX, velocityY);
+			}
+		};
 	}
 	
-	public void setContentView(View view){
-		view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-		contentView.addView(view);
-		contentView.setOnTouchListener(this);
+	public static class Menu{
+		
+		private Context context;
+		private List<Item> mItems = new ArrayList<Item>();
+
+		public Menu(Context context){
+			this.context = context;
+		}
+		
+		public Context getContext(){
+			return this.context;
+		}
+		
+		public void addMenuItem(Item item) {
+			mItems.add(item);
+		}
+
+		public void removeMenuItem(Item item) {
+			mItems.remove(item);
+		}
+
+		public List<Item> getMenuItems() {
+			return mItems;
+		}
+
+		public Item getMenuItem(int index) {
+			return mItems.get(index);
+		}
+
 	}
 	
-	public View getContentView(){
-		return contentView.getChildAt(0);
-	}
-
-	public View getCustomerView() {
-		return customerView;
-	}
-
-	public void setCustomerView(View customerView) {
-		this.customerView = customerView;
-		this.type = ACTION_CUSTOMER;
-	}
-
-	public boolean isShowActionEnable() {
-		return showActionEnable;
-	}
-
-	public void setShowActionEnable(boolean showActionEnable) {
-		this.showActionEnable = showActionEnable;
-	}
-
-	
-	public String getActionString() {
-		return actionString;
-	}
-
-	public void setActionString(String actionString) {
-		this.actionString = actionString;
-	}
-
-	public String getOtherString() {
-		return otherString;
-	}
-
-	public void setOtherString(String otherString) {
-		this.otherString = otherString;
-	}
-
-	public int getActionColor() {
-		return actionColor;
-	}
-
-	public void setActionColor(int actionColor) {
-		this.actionColor = actionColor;
-	}
-
-	public int getOtherColor() {
-		return otherColor;
-	}
-
-	public void setOtherColor(int otherColor) {
-		this.otherColor = otherColor;
-	}
-
-	public int getType() {
-		return type;
-	}
-
-	public void setType(int type) {
-		this.type = type;
-		createActionView();
-	}
-
-	@SuppressLint("ClickableViewAccessibility")
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		return gesture.onTouchEvent(event);
-	}
-
-	@Override
-	public boolean onDown(MotionEvent e) {
-		return true;
-	}
-
-	@Override
-	public void onShowPress(MotionEvent e) {
+	public static class Item{
 		
-	}
-
-	@Override
-	public boolean onSingleTapUp(MotionEvent e) {
-		View view = (View) getParent();
-		int x = (int) e.getRawX();
-		int y = (int) e.getRawY();
-		if (showAction && view instanceof UIListView) {
-			UIListView listView = (UIListView) view;
-			int[] location = new  int[2] ;
-			final float rawX = x+ actionView.getWidth();
-			final UIListViewAdpater adpater = listView.getUIListViewAdpater();
-			final int position = listView.pointToPosition(x, y) - listView.getHeaderViewsCount();
-			if (adpater == null) {
-				return false;
-			}
-			if (deleteButton != null) {
-				deleteButton.getLocationInWindow(location);
-				if (rawX > location[0] && rawX < location[0] + deleteButton.getWidth()) {
-					AnimationListener animationListener = new AnimationListener() {
-						@Override
-						public void onAnimationStart(Animation animation) {}
-						
-						@Override
-						public void onAnimationRepeat(Animation animation) {}
-						
-						@Override
-						public void onAnimationEnd(Animation animation) {
-							adpater.deleteClick(position - 1);
-						}
-					};
-					deleteAction(animationListener);
-					return false;
-				}
-			}
-			if (otherButton != null) {
-				otherButton.getLocationInWindow(location);
-				if (rawX > location[0] && rawX < location[0] + otherButton.getWidth()) {
-					adpater.otherClick(position - 1);
-					hideAction();
-					return false;
-				}
-			}
-			if (actionButton != null) {
-				actionButton.getLocationInWindow(location);
-				if (rawX > location[0] && rawX < location[0] + actionButton.getWidth()) {
-					adpater.actionClick(position - 1);
-					hideAction();
-					return false;
-				}
-			}
-			if (customerView != null) {
-				customerView.getLocationInWindow(location);
-				if (rawX > location[0] && rawX < location[0] + customerView.getWidth()) {
-					adpater.customerClick(position - 1, customerView);
-					hideAction();
-					return false;
-				}
-			}
+		public static final int COLOR_WHITE = Color.parseColor("#FFFFFF");
+		public static final int COLOR_BLACK = Color.parseColor("#000000");
+		public static final int COLOR_LTGRAY = Color.parseColor("#BDBFBE");
+		public static final int COLOR_RED = Color.parseColor("#F24535");
+		public static final int COLOR_YELLOW = Color.parseColor("#F2D750");
+		public static final int COLOR_GREEN = Color.parseColor("#00B58A");
+		public static final int COLOR_BLUE = Color.parseColor("#009EFC");
+		public static final int COLOR_PURPLE = Color.parseColor("#772999");
+		
+		private String title;
+		private Drawable icon;
+		private int backgroundColor;
+		private int titleColor = Color.parseColor("#777777");
+		private int titleSize = 14;
+		private Typeface typeface = Typeface.DEFAULT;
+		
+		public Item(String title){
+			this.title = title;
 		}
-		if (view instanceof UIListView) {
-			UIListView listView = (UIListView) view;
-			int position = listView.pointToPosition(x, y) - listView.getHeaderViewsCount();
-			listView.getOnItemClickListener().onItemClick(listView, listView.getChildAt(position), position , position);
-		}else if (view instanceof ListView) {
-			ListView listView = (ListView) view;
-			int position = listView.pointToPosition(x, y);
-			listView.getOnItemClickListener().onItemClick(listView, listView.getChildAt(position), position, position);
+		
+		public String getTitle() {
+			return title;
 		}
-		return false;
-	}
-
-	@Override
-	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-		return false;
-	}
-
-	@Override
-	public void onLongPress(MotionEvent e) {
-		
-	}
-
-	@Override
-	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-		if (!showActionEnable) {
-			return false;
+		public void setTitle(String title) {
+			this.title = title;
 		}
-		if (e1.getX() - e2.getX() > 10) {
-			showAction();
-		}else if(e2.getX() - e1.getX() > 10){
-			hideAction();
+
+		public Drawable getIcon() {
+			return icon;
 		}
-		return false;
-	}
 
-	private void showAction(){
-		TranslateAnimation animation = new TranslateAnimation(0, -actionView.getWidth(), 0, 0);
-		animation.setDuration(400);
-		animation.setFillAfter(true);
-		
-		contentView.startAnimation(animation);
-		actionView.startAnimation(animation);
-		
-		this.showAction = true;
-	}
+		public void setIcon(Drawable icon) {
+			this.icon = icon;
+		}
 
-	private void hideAction(){
-		TranslateAnimation animation = new TranslateAnimation(-actionView.getWidth(), 0, 0, 0);
-		animation.setDuration(400);
-		animation.setFillAfter(true);
+		public int getTitleColor() {
+			return titleColor;
+		}
+
+		public void setTitleColor(int titleColor) {
+			this.titleColor = titleColor;
+		}
+
+		public int getTitleSize() {
+			return titleSize;
+		}
+
+		public void setTitleSize(int titleSize) {
+			this.titleSize = titleSize;
+		}
+
+		public int getBackgroundColor() {
+			return backgroundColor;
+		}
+
+		public void setBackgroundColor(int backgroundColor) {
+			this.backgroundColor = backgroundColor;
+			this.titleColor = COLOR_WHITE;
+		}
+
+		public Typeface getTypeface() {
+			return typeface;
+		}
+
+		public void setTypeface(Typeface typeface) {
+			this.typeface = typeface;
+		}
 		
-		contentView.startAnimation(animation);
-		actionView.startAnimation(animation);
 		
-		this.showAction = false;
-	}
-	
-	private void deleteAction(AnimationListener animationListener){
-		TranslateAnimation animation = new TranslateAnimation(0, getWidth(), 0, 0);
-		animation.setDuration(600);
-		animation.setFillBefore(true);
-		animation.setAnimationListener(animationListener);
-		startAnimation(animation);
-		hideAction();
+		
 	}
 }
