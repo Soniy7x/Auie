@@ -494,6 +494,9 @@ public class UIListView extends ListView implements OnScrollListener{
 				mTouchView = null;
 			}
 		}
+		if (onTouchListener == null) {
+			return;
+		}
 		if (pressX - event.getX() > DISTANCE_X) {
 			onTouchListener.onTouchLeft();
 		}else {
