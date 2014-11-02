@@ -207,13 +207,15 @@ public class UIButton extends RelativeLayout implements OnTouchListener{
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			getBackground().setState(View.PRESSED_ENABLED_FOCUSED_SELECTED_STATE_SET);
+			super.onTouchEvent(event);
+			return true;
 		case MotionEvent.ACTION_UP:
 			getBackground().setState(View.EMPTY_STATE_SET);
+			return false;
 		default:
 			getBackground().setState(View.PRESSED_ENABLED_FOCUSED_SELECTED_STATE_SET);
-			break;
+			return false;
 		}
-		return false;
 	}
 	
 	@SuppressLint("DrawAllocation") 
