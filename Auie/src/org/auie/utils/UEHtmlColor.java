@@ -2,7 +2,7 @@ package org.auie.utils;
 
 import android.graphics.Color;
 
-public enum HtmlColor {
+public enum UEHtmlColor {
 	
 	ALIECEBLUE(Color.parseColor("#F0F8FF")),
 	ANTIQUEWHITE(Color.parseColor("#FAEBD7")),
@@ -148,7 +148,7 @@ public enum HtmlColor {
 	
 	private int color;
 
-	private HtmlColor(int color) {
+	private UEHtmlColor(int color) {
 		this.color = color;
 	}
 
