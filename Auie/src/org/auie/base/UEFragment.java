@@ -2,8 +2,8 @@ package org.auie.base;
 
 import java.util.Locale;
 
+import org.auie.annotation.UEAnnotation.UELayout;
 import org.auie.annotation.UEAnnotationManager;
-import org.auie.annotation.UELayout;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -38,8 +38,8 @@ public abstract class UEFragment extends Fragment implements OnClickListener{
 		View view = null;
 		if (this.getClass().isAnnotationPresent(UELayout.class)) {
 			UELayout initializtion = this.getClass().getAnnotation(UELayout.class);
-			if (initializtion.ID() != -1) {
-				view = inflater.inflate(initializtion.ID(), null);
+			if (initializtion.value() != -1) {
+				view = inflater.inflate(initializtion.value(), null);
 			}else{
 				try{
 					int layout = getActivity().getResources().getIdentifier(getActivity().getClass().getSimpleName().toLowerCase(Locale.getDefault()), "layout", getActivity().getPackageName());
