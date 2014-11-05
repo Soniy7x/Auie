@@ -51,11 +51,11 @@ public class UEImageLoader {
         }  
     }  
     
-    public void downloadImage(final String url, final UEImageLoadListener callback){  
+    public void downloadImage(final String url, final OnUEImageLoadListener callback){  
         downloadImage(url, true, callback);  
     }  
       
-    public void downloadFile(final String url, final UEImageLoadListener callback){  
+    public void downloadFile(final String url, final OnUEImageLoadListener callback){  
     	Bitmap bitmap = cacheManager.getBitmapFromMemory(url);  
         if(bitmap != null){  
             if(callback != null){  
@@ -83,7 +83,7 @@ public class UEImageLoader {
         }  
     }
     
-    public void downloadImage(final String url, final boolean cache2Memory, final UEImageLoadListener callback){  
+    public void downloadImage(final String url, final boolean cache2Memory, final OnUEImageLoadListener callback){  
         if(mSet.contains(url)){  
             Log.w(Auie.TAG, "图片正在下载，不能重复下载");  
             return;
@@ -118,7 +118,7 @@ public class UEImageLoader {
     }  
     
     
-    public interface UEImageLoadListener{   
+    public interface OnUEImageLoadListener{   
         public void onImageLoadComlepeted(Bitmap bitmap, String imageUrl);  
     }  
       
