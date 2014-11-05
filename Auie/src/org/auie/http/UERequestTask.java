@@ -7,7 +7,7 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.auie.core.Auie;
+import org.auie.utils.UETag;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -28,7 +28,7 @@ public class UERequestTask extends AsyncTask<Void, Void, UEResponseHolder>{
 		try {
 			HttpResponse response = client.execute((HttpUriRequest) request.getRequest());
 			StatusLine status = response.getStatusLine();
-			Log.i(Auie.TAG, "HTTP Requst status - " + status.getStatusCode());
+			Log.i(UETag.TAG, "HTTP Requst status - " + status.getStatusCode());
 			if(status.getStatusCode() > 300){
 				return new UEResponseHolder(new HttpResponseException(status.getStatusCode(), status.getReasonPhrase()), 
 						request.getListener());
@@ -38,7 +38,7 @@ public class UERequestTask extends AsyncTask<Void, Void, UEResponseHolder>{
 				entity = new BufferedHttpEntity(entity);
 			}
 		} catch (Exception e){
-			Log.d(Auie.TAG, e.toString());
+			Log.d(UETag.TAG, e.toString());
 			return new UEResponseHolder(e, request.getListener());
 		}
 		return new UEResponseHolder(entity, request.getListener());

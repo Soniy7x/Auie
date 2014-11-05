@@ -16,7 +16,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
-import org.auie.core.Auie;
+import org.auie.utils.UETag;
 
 import android.content.Context;
 import android.util.Log;
@@ -74,7 +74,7 @@ public class UEHttpClient {
 			try {
 				post.setEntity(new UrlEncodedFormEntity(params.getParams(), "utf-8"));
 			} catch (UnsupportedEncodingException e) {
-				Log.d(Auie.TAG, e.toString());
+				Log.d(UETag.TAG, e.toString());
 			}
 		}
 		return post;
