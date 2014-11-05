@@ -196,7 +196,7 @@ public class UILetterIndexView extends RelativeLayout {
 		return indexDatas;
 	}
 
-	private List<Model> itemModelToModel(List<String> indexDatas){
+	public List<Model> itemModelToModel(List<String> indexDatas){
 		List<Model> models = new ArrayList<>();
 		for (String data : indexDatas) {
 			models.add(new Model(data, data));
