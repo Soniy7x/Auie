@@ -1,6 +1,6 @@
-package org.auie.core;
+package org.auie.utils;
 
-public class Auie {
+public class UETag {
 	
 	public static final String TAG = "Auie";
 	
