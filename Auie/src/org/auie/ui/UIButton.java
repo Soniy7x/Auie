@@ -43,7 +43,7 @@ public class UIButton extends RelativeLayout implements OnTouchListener{
 	private int strokeColor = Color.parseColor("#D8D8D8");
 	
 	private int textSize = 14;
-	private String text = "UIButton";
+	private String text = "";
 	
 	public UIButton(Context context) {
 		super(context);
