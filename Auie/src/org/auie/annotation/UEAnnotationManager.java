@@ -3,8 +3,25 @@ package org.auie.annotation;
 import java.lang.reflect.Field;
 import java.util.Locale;
 
+import org.auie.annotation.UEAnnotation.UEAlpha;
+import org.auie.annotation.UEAnnotation.UEBackgroundColor;
+import org.auie.annotation.UEAnnotation.UEBackgroundResource;
+import org.auie.annotation.UEAnnotation.UEClickable;
+import org.auie.annotation.UEAnnotation.UEEnabled;
+import org.auie.annotation.UEAnnotation.UEID;
+import org.auie.annotation.UEAnnotation.UELayout;
+import org.auie.annotation.UEAnnotation.UENew;
+import org.auie.annotation.UEAnnotation.UEOnClick;
+import org.auie.annotation.UEAnnotation.UEText;
+import org.auie.annotation.UEAnnotation.UETextColor;
+import org.auie.annotation.UEAnnotation.UETextSize;
+import org.auie.annotation.UEAnnotation.UEVisibility;
+import org.auie.ui.UIButton;
+import org.auie.ui.UIEditText;
+
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -37,7 +54,7 @@ public class UEAnnotationManager {
 	public void initializeFont(Activity context, Typeface typeface){
 		Field[] fields = context.getClass().getDeclaredFields();
 		for (Field field : fields) {
-			if (field.isAnnotationPresent(UEWidget.class)) {
+			if (field.isAnnotationPresent(UEID.class)) {
 				setFont(context, field, typeface);
 			}
 		}
@@ -69,9 +86,9 @@ public class UEAnnotationManager {
 		}
 		Field[] fields = context.getClass().getDeclaredFields();
 		for (Field field : fields) {
-			if (field.isAnnotationPresent(UEWidget.class)) {
+			if (field.isAnnotationPresent(UEID.class)) {
 				initializeWidgets(field, context);
-			} else if (field.isAnnotationPresent(UEObject.class)) {
+			} else if (field.isAnnotationPresent(UENew.class)) {
 				initializeObjects(field, context);
 			}
 		}
@@ -85,9 +102,9 @@ public class UEAnnotationManager {
 	public void initialize(Fragment fragment, View view) {
 		Field[] fields = fragment.getClass().getDeclaredFields();
 		for (Field field : fields) {
-			if (field.isAnnotationPresent(UEWidget.class)) {
+			if (field.isAnnotationPresent(UEID.class)) {
 				initializeWidgets(field, fragment, view);
-			} else if (field.isAnnotationPresent(UEObject.class)) {
+			} else if (field.isAnnotationPresent(UENew.class)) {
 				initializeObjects(field, fragment, view);
 			}
 		}
@@ -99,8 +116,8 @@ public class UEAnnotationManager {
 	 */
 	private void initializeLayout(Activity context){
 		UELayout initialization = context.getClass().getAnnotation(UELayout.class);
-		if (initialization.ID() != -1) {
-			context.setContentView(initialization.ID());
+		if (initialization.value() != -1) {
+			context.setContentView(initialization.value());
 		} else {
 			try{
 				int layout = context.getResources().getIdentifier(context.getClass().getSimpleName().toLowerCase(Locale.getDefault()), "layout", context.getPackageName());
@@ -121,24 +138,67 @@ public class UEAnnotationManager {
 	 * @param context
 	 */
 	private void initializeWidgets(Field field, Activity context){
-		if (field.isAnnotationPresent(UEWidget.class)) {
-			final UEWidget initialization = field.getAnnotation(UEWidget.class);
-			int ID = initialization.ID();
-			try{
-				field.setAccessible(true);
-				if (ID == -1) {
-					ID = context.getResources().getIdentifier(field.getName(), "id", context.getPackageName());
-					if (ID == 0) {
-						Log.e("Deliration", "资源错误 - 未找到ID为R.id." + field.getName() + "的控件");
-					}
+		if (!field.isAnnotationPresent(UEID.class)) {
+			return;
+		}
+		final UEID initialization = field.getAnnotation(UEID.class);
+		int ID = initialization.value();
+		try{
+			field.setAccessible(true);
+			if (ID == -1) {
+				ID = context.getResources().getIdentifier(field.getName(), "id", context.getPackageName());
+				if (ID == 0) {
+					Log.e("Deliration", "资源错误 - 未找到ID为R.id." + field.getName() + "的控件");
+					return;
 				}
-				field.set(context, context.findViewById(ID));
-				if (initialization.onClick()) {
-					field.getType().getMethod("setOnClickListener", OnClickListener.class).invoke(context.findViewById(ID), context);
-				}
-			}catch(Exception e){
-				Log.d("initializeWidgets", e.getMessage());
 			}
+			View view = context.findViewById(ID);
+			Class<?> clazz = field.getType();
+			field.set(context, view);
+			if (field.isAnnotationPresent(UEVisibility.class)) {
+				clazz.getMethod("setVisibility", int.class).invoke(view, context);
+			}
+			if (field.isAnnotationPresent(UEBackgroundColor.class)) {
+				clazz.getMethod("setBackgroundColor", int.class).invoke(view, Color.parseColor(field.getAnnotation(UEBackgroundColor.class).value()));
+			}
+			if (field.isAnnotationPresent(UEAlpha.class)) {
+				clazz.getMethod("setAlpha", float.class).invoke(view, field.getAnnotation(UEAlpha.class).value());
+			}
+			if (field.isAnnotationPresent(UEOnClick.class)) {
+				clazz.getMethod("setOnClickListener", OnClickListener.class).invoke(view, context);
+			}
+			if (field.isAnnotationPresent(UEClickable.class)) {
+				clazz.getMethod("setClickable", boolean.class).invoke(view, field.getAnnotation(UEClickable.class).value());
+			}
+			if (field.isAnnotationPresent(UEEnabled.class)) {
+				clazz.getMethod("setEnabled", boolean.class).invoke(view, field.getAnnotation(UEEnabled.class).value());
+			}
+			if (field.isAnnotationPresent(UEBackgroundResource.class)) {
+				int resId = field.getAnnotation(UEBackgroundResource.class).value();
+				if (resId == -1) {
+					resId = context.getResources().getIdentifier(field.getName(), "drawable", context.getPackageName());
+				}
+				if (resId < 1) {
+					Log.e("Deliration", "资源错误 - 未找到ID为R.drawable." + field.getName() + "的图片");
+				}else {					
+					clazz.getMethod("setBackgroundResource", OnClickListener.class).invoke(view, resId);
+				}
+			}
+			if (!isExpress(field.getType())) {
+				return;
+			}
+			if (field.isAnnotationPresent(UEText.class)) {
+				clazz.getMethod("setText", String.class).invoke(view, field.getAnnotation(UEText.class).value());
+			}
+			if (field.isAnnotationPresent(UETextSize.class)) {
+				clazz.getMethod("setTextSize", int.class).invoke(view, field.getAnnotation(UETextSize.class).value());
+			}
+			if (field.isAnnotationPresent(UETextColor.class)) {
+				clazz.getMethod("setTextColor", int.class).invoke(view, Color.parseColor(field.getAnnotation(UETextColor.class).value()));
+			}
+		}catch(Exception e){
+			System.out.println(e.toString());
+			Log.d("initializeWidgets", e.getMessage());
 		}
 	}
 	
@@ -148,7 +208,7 @@ public class UEAnnotationManager {
 	 * @param context
 	 */
 	private void initializeObjects(Field field, Activity context){
-		if (field.isAnnotationPresent(UEObject.class)) {
+		if (field.isAnnotationPresent(UENew.class)) {
 			try {
 				field.setAccessible(true);
 				field.set(context, field.getType().newInstance());
@@ -164,9 +224,9 @@ public class UEAnnotationManager {
 	 * @param context
 	 */
 	private void initializeWidgets(Field field, Fragment fragment, View view){
-		if (field.isAnnotationPresent(UEWidget.class)) {
-			final UEWidget initialization = field.getAnnotation(UEWidget.class);
-			int ID = initialization.ID();
+		if (field.isAnnotationPresent(UEID.class)) {
+			final UEID initialization = field.getAnnotation(UEID.class);
+			int ID = initialization.value();
 			try{
 				field.setAccessible(true);
 				if (ID == -1) {
@@ -176,8 +236,21 @@ public class UEAnnotationManager {
 					}
 				}
 				field.set(fragment, view.findViewById(ID));
-				if (initialization.onClick()) {
-					field.getType().getMethod("setOnClickListener", OnClickListener.class).invoke(view.findViewById(ID), fragment);
+				if (field.isAnnotationPresent(UEOnClick.class)) {
+					field.getType().getMethod("setOnClickListener", OnClickListener.class)
+					.invoke(view.findViewById(ID), fragment);
+				}
+				if (field.isAnnotationPresent(UETextColor.class)) {
+					field.getType().getMethod("setTextColor", Integer.class)
+					.invoke(view.findViewById(ID), Color.parseColor(field.getAnnotation(UETextColor.class).value()));
+				}
+				if (field.isAnnotationPresent(UETextSize.class)) {
+					field.getType().getMethod("setTextSize", Integer.class)
+					.invoke(view.findViewById(ID), field.getAnnotation(UETextSize.class).value());
+				}
+				if (field.isAnnotationPresent(UEBackgroundColor.class)) {
+					field.getType().getMethod("setBackgroundColor", Integer.class)
+					.invoke(view.findViewById(ID), Color.parseColor(field.getAnnotation(UEBackgroundColor.class).value()));
 				}
 			}catch(Exception e){
 				Log.d("initializeWidgets", e.getMessage());
@@ -191,7 +264,7 @@ public class UEAnnotationManager {
 	 * @param context
 	 */
 	private void initializeObjects(Field field, Fragment fragment, View view){
-		if (field.isAnnotationPresent(UEObject.class)) {
+		if (field.isAnnotationPresent(UENew.class)) {
 			try {
 				field.setAccessible(true);
 				field.set(fragment, field.getType().newInstance());
@@ -199,5 +272,22 @@ public class UEAnnotationManager {
 				Log.d("initializeObjects", e.getMessage());
 			}
 		}
+	}
+	
+	private static final Class<?>[] EXPRESS_CLASSES = {
+		TextView.class,
+		EditText.class,
+		Button.class,
+		UIButton.class,
+		UIEditText.class,
+	};
+	
+	private boolean isExpress(Class<?> clazz){
+		for (Class<?> express : EXPRESS_CLASSES) {
+			if (clazz == express) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
