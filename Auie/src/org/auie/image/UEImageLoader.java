@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.auie.core.Auie;
+import org.auie.utils.UETag;
 import org.auie.utils.UEImageNotByteException;
 
 import android.content.Context;
@@ -85,7 +85,7 @@ public class UEImageLoader {
     
     public void downloadImage(final String url, final boolean cache2Memory, final OnUEImageLoadListener callback){  
         if(mSet.contains(url)){  
-            Log.w(Auie.TAG, "图片正在下载，不能重复下载");  
+            Log.w(UETag.TAG, "图片正在下载，不能重复下载");  
             return;
         }  
           
