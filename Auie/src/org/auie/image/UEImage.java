@@ -25,6 +25,8 @@ import android.graphics.Bitmap.Config;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RoundRectShape;
 
 @SuppressWarnings("deprecation")
 public class UEImage {
@@ -184,5 +186,18 @@ public class UEImage {
 		bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
 		bitmapToDrawable();
  		return this;
+	}
+	
+	/**
+	 * 生成图片
+	 */
+	public static ShapeDrawable createBackground(int color, int alpha, float radius){
+		float[] outerR = new float[] { radius, radius, radius, radius, radius, radius, radius, radius };
+		RoundRectShape roundRectShape = new RoundRectShape(outerR, null, null);
+        ShapeDrawable shapeDrawable = new ShapeDrawable(roundRectShape);
+        shapeDrawable.getPaint().setColor(color);
+        shapeDrawable.getPaint().setAlpha(alpha);
+        shapeDrawable.getPaint().setStyle(Paint.Style.FILL);
+        return shapeDrawable;
 	}
 }
