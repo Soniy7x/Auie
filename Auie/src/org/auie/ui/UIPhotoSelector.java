@@ -3,7 +3,9 @@ package org.auie.ui;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.auie.image.UEImage;
 import org.auie.image.UEImageLoader;
 import org.auie.image.UEImageManager;
 import org.auie.image.UEImageLoader.OnUEImageLoadListener;
@@ -21,10 +23,13 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.TranslateAnimation;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -100,7 +105,14 @@ public class UIPhotoSelector extends PopupWindow {
 		buckets = manager.getTempBuckets(true);
 		bucketAdapter = new BucketAdapter(buckets);
 		bucketListView.setAdapter(bucketAdapter);
-		images = buckets.get(buckets.size() - 1).images;
+		for (Bucket bucket : buckets) {
+			if (bucket.name.toLowerCase(Locale.getDefault()).contains("camera") || bucket.name.contains("相机")) {
+				images = bucket.images;
+			}
+		}
+		if (images == null) {			
+			images = buckets.get(buckets.size() - 1).images;
+		}
 		adapter = new ImageAdapter(images);
 		photoGridView.setAdapter(adapter);
 	}
@@ -125,14 +137,52 @@ public class UIPhotoSelector extends PopupWindow {
 		}
 	};
 	
+	private void showOrHideBuckets(){
+		if (bucketListView.getVisibility() == View.GONE) {
+			TranslateAnimation animation = new TranslateAnimation(0, 0, 278 * DP, 0);
+			animation.setDuration(280);
+			bottomContainer.setAnimation(animation);
+			bucketListView.setAnimation(animation);
+			bucketListView.setVisibility(View.VISIBLE);
+		}else {
+			TranslateAnimation animation = new TranslateAnimation(0, 0, 0, 278 * DP);
+			animation.setDuration(120);
+			bottomContainer.setAnimation(animation);
+			bucketListView.setAnimation(animation);
+			bucketListView.setVisibility(View.GONE);
+		}
+	}
+	
 	private OnClickListener bottomLeftClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			if (bucketListView.getVisibility() == View.GONE) {
-				bucketListView.setVisibility(View.VISIBLE);
-			}else {
-				bucketListView.setVisibility(View.GONE);
+			showOrHideBuckets();
+		}
+	};
+	
+	private float y = 0;
+	private boolean isTouching = false;
+	
+	private OnTouchListener onTouchListener = new OnTouchListener() {		
+		
+		@SuppressLint("ClickableViewAccessibility")
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			switch (event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+				y = event.getY();
+				break;
+			case MotionEvent.ACTION_UP:
+				isTouching = false;
+				break;
+			default:
+				if (Math.abs(y - event.getY()) > 10 * DP && !isTouching) {
+					isTouching = true;
+					showOrHideBuckets();
+				}
+				break;
 			}
+			return true;
 		}
 	};
 	
@@ -153,7 +203,8 @@ public class UIPhotoSelector extends PopupWindow {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			selectImages.clear();
-			adapter.refresh(buckets.get(position).images);
+			images = buckets.get(position).images;
+			adapter.refresh(images);
 			bucketListView.setVisibility(View.GONE);
 		}
 	};
@@ -253,6 +304,7 @@ public class UIPhotoSelector extends PopupWindow {
 		bottomContainer = new RelativeLayout(context);
 		bottomContainer.setLayoutParams(getParams1(MATCH_PARENT1, 48 * DP));
 		bottomContainer.setBackgroundColor(Color.parseColor("#2e3334"));
+		bottomContainer.setOnTouchListener(onTouchListener);
 		
 		LayoutParams bottomLeftParams = (LayoutParams) getParams2(90 * DP, MATCH_PARENT2);
 		bottomLeftParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
@@ -381,26 +433,22 @@ public class UIPhotoSelector extends PopupWindow {
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ImageView imageView;
-			if (convertView == null) {
-				RelativeLayout mContainer = new RelativeLayout(context);
-				mContainer.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.WRAP_CONTENT,AbsListView.LayoutParams.WRAP_CONTENT));
-				imageView = new ImageView(context);
-				imageView.setLayoutParams(getParams2(IMAGE_SIZE, IMAGE_SIZE));
-				imageView.setScaleType(ScaleType.CENTER_CROP);
-				RelativeLayout.LayoutParams params = getParams2(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-				params.setMargins(4 * DP, 4 * DP, 4 * DP, 4 * DP);
-				params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-				ImageView selectImageView = new ImageView(context);
-				selectImageView.setLayoutParams(params);
-				selectImageView.setVisibility(View.INVISIBLE);
-				selectImageView.setImageResource(android.R.drawable.presence_online);
-				mContainer.addView(imageView);
-				mContainer.addView(selectImageView);
-				convertView = mContainer;
-				convertView.setTag(imageView);
-			}else {
-				imageView = (ImageView) convertView.getTag();
-			}
+			RelativeLayout mContainer = new RelativeLayout(context);
+			mContainer.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.WRAP_CONTENT,AbsListView.LayoutParams.WRAP_CONTENT));
+			imageView = new ImageView(context);
+			imageView.setLayoutParams(getParams2(IMAGE_SIZE, IMAGE_SIZE));
+			imageView.setScaleType(ScaleType.CENTER_CROP);
+			RelativeLayout.LayoutParams params = getParams2(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+			params.setMargins(4 * DP, 4 * DP, 4 * DP, 4 * DP);
+			params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+			ImageView selectImageView = new ImageView(context);
+			selectImageView.setLayoutParams(params);
+			selectImageView.setVisibility(View.INVISIBLE);
+			selectImageView.setImageResource(android.R.drawable.presence_online);
+			mContainer.addView(imageView);
+			mContainer.addView(selectImageView);
+			convertView = mContainer;
+			convertView.setTag(imageView);
 			String path = ((Image)getItem(position)).thumbnail;
 			if (path == null) {
 				path = ((Image)getItem(position)).path;
@@ -412,7 +460,7 @@ public class UIPhotoSelector extends PopupWindow {
 			new UEImageLoader(context).downloadFile(path, new OnUEImageLoadListener() {
 				@Override
 				public void onImageLoadComlepeted(Bitmap bitmap, String imageUrl) {
-					iv.setImageBitmap(bitmap);
+					iv.setImageBitmap(new UEImage(bitmap).compressOnlyQuality(50).toBitmap());
 				}
 			});
 			return convertView;
