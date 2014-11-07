@@ -3,31 +3,31 @@ package org.auie.ui;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.auie.image.UEImage;
 import org.auie.image.UEImageManager.Image;
 import org.auie.utils.UEImageNotByteException;
 import org.auie.utils.UEMethod;
-import android.annotation.SuppressLint;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;;
+import android.widget.RelativeLayout.LayoutParams;
 
 @SuppressWarnings("deprecation")
 public class UIImagePager extends PopupWindow {
@@ -40,11 +40,13 @@ public class UIImagePager extends PopupWindow {
 	
 	private Context context;
 	private RelativeLayout rootContainer;
-	private HorizontalScrollView contentContainer;
-	private LinearLayout mContainer;
+	private ViewPager contentContainer;
 	private LinearLayout indexContainer;
 	
-	private List<View> indexViews = new ArrayList<View>();;
+	private List<View> indexViews = new ArrayList<View>();
+	private List<View> imageViews = new ArrayList<View>();
+	private ImageAdapter imageAdapter = new ImageAdapter();
+	private OnDismissListener onDismissListener;
 	
 	private List<Bitmap> bitmaps = new ArrayList<Bitmap>();
 	
@@ -52,7 +54,6 @@ public class UIImagePager extends PopupWindow {
 	private int HEIGHT = 0;
 	private int DP = 1;
 	
-	private float pressX = 0;
 	private int currentIndex = 0;
 	
 	public UIImagePager(Context context, List<Image> images) throws IOException, UEImageNotByteException{
@@ -92,24 +93,21 @@ public class UIImagePager extends PopupWindow {
 			indexContainer.addView(view);
 			ImageView imageView = new ImageView(context);
 			imageView.setLayoutParams(params2);
-			imageView.setScaleType(ScaleType.FIT_XY);
+			imageView.setScaleType(ScaleType.FIT_CENTER);
 			imageView.setImageBitmap(bitmaps.get(i));
-			mContainer.addView(imageView);
+			imageViews.add(imageView);
+			imageAdapter.notifyDataSetChanged();
 		}
 	}
-
+	
 	private void init(Context context){
+		((Activity) context).getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-		WindowManager.LayoutParams attrs = ((Activity) context).getWindow().getAttributes();
 		this.context = context;
 		this.DP = UEMethod.dp2px(context, 1);
 		this.NO_SELECTED_DRAWABLE = UEImage.createBackground(Color.parseColor("#FFFFFF"), 50, 6 * DP);
 		this.SELECTED_DRAWABLE = UEImage.createBackground(Color.parseColor("#EEEEEE"), 255, 6 * DP);
-		if((attrs.flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == WindowManager.LayoutParams.FLAG_FULLSCREEN){
-			this.HEIGHT = manager.getDefaultDisplay().getHeight();
-		}else {
-			this.HEIGHT = manager.getDefaultDisplay().getHeight() - 24 * DP;
-		}
+		this.HEIGHT = manager.getDefaultDisplay().getHeight();
 		this.WIDTH = manager.getDefaultDisplay().getWidth();
 		createView();
 	}
@@ -120,6 +118,20 @@ public class UIImagePager extends PopupWindow {
 		setWidth(WIDTH);
 		setHeight(HEIGHT);
 		setFocusable(true);
+		super.setOnDismissListener(new OnDismissListener() {
+			
+			@Override
+			public void onDismiss() {
+				((Activity) context).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				if (onDismissListener != null) {
+					onDismissListener.onDismiss();
+				}
+			}
+		});
+	}
+	
+	public void setOnDismissListener(OnDismissListener listener){
+		this.onDismissListener = listener;
 	}
 
 	private View createContentView() {
@@ -130,46 +142,27 @@ public class UIImagePager extends PopupWindow {
 		
 		LayoutParams contentParams = new LayoutParams(MATCH_PARENT, WRAP_CONTENT);
 		contentParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-		contentContainer = new HorizontalScrollView(context);
+		contentContainer = new ViewPager(context);
 		contentContainer.setLayoutParams(contentParams);
-		contentContainer.setVerticalScrollBarEnabled(false);
-		contentContainer.setHorizontalScrollBarEnabled(false);
-		contentContainer.setOnTouchListener(new OnTouchListener() {
-			@SuppressLint("ClickableViewAccessibility")
+		contentContainer.setAdapter(imageAdapter);
+		contentContainer.setOnPageChangeListener(new OnPageChangeListener() {
+			
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				switch (event.getAction()) {
-				case MotionEvent.ACTION_DOWN:
-					pressX = event.getX();
-					break;
-
-				case MotionEvent.ACTION_UP:
-					System.out.println(event.getX() + "," + pressX);
-					if (pressX - event.getX() > 100) {
-						if (currentIndex < bitmaps.size() - 1) {
-							indexViews.get(currentIndex).setBackgroundDrawable(NO_SELECTED_DRAWABLE);
-							currentIndex++;
-							contentContainer.scrollTo((int)(currentIndex * WIDTH), (int)contentContainer.getScrollY());
-						}
-					}else {
-						if (currentIndex > 0) {
-							indexViews.get(currentIndex).setBackgroundDrawable(NO_SELECTED_DRAWABLE);
-							currentIndex--;
-							contentContainer.scrollTo((int)(currentIndex * WIDTH), (int)contentContainer.getScrollY());
-						}
-					}
-					indexViews.get(currentIndex).setBackgroundDrawable(SELECTED_DRAWABLE);
-					break;
-				default:
-					break;
-				}
-				return true;
+			public void onPageSelected(int index) {
+				indexViews.get(currentIndex).setBackgroundDrawable(NO_SELECTED_DRAWABLE);
+				indexViews.get(index).setBackgroundDrawable(SELECTED_DRAWABLE);
+				currentIndex = index;
+			}
+			
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+			}
+			
+			@Override
+			public void onPageScrollStateChanged(int index) {
+				
 			}
 		});
-		
-		mContainer = new LinearLayout(context);
-		mContainer.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT));
-		mContainer.setOrientation(LinearLayout.HORIZONTAL);
 		
 		LayoutParams params = new LayoutParams(MATCH_PARENT, WRAP_CONTENT);
 		params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
@@ -179,7 +172,6 @@ public class UIImagePager extends PopupWindow {
 		indexContainer.setGravity(Gravity.CENTER);
 		indexContainer.setOrientation(LinearLayout.HORIZONTAL);
 		
-		contentContainer.addView(mContainer);
 		rootContainer.addView(contentContainer);
 		rootContainer.addView(indexContainer);
 		
@@ -189,5 +181,31 @@ public class UIImagePager extends PopupWindow {
 	public UIImagePager show(){
 		showAtLocation(((ViewGroup)(((Activity) context).findViewById(android.R.id.content))).getChildAt(0), Gravity.BOTTOM, 0, 0);
 		return this;
+	}
+	
+	
+	
+	class ImageAdapter extends PagerAdapter{
+		
+		@Override
+		public boolean isViewFromObject(View arg0, Object arg1) {
+			return arg0 == arg1;
+		}
+
+		@Override
+		public int getCount() {
+			return imageViews.size();
+		}
+
+		@Override
+		public void destroyItem(View container, int position, Object object) {
+			((ViewPager) container).removeView(imageViews.get(position));
+		}
+
+		@Override
+		public Object instantiateItem(View container, int position) {
+			((ViewPager) container).addView(imageViews.get(position));
+			return imageViews.get(position);
+		}
 	}
 }
