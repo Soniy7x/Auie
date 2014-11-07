@@ -13,6 +13,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
+import org.auie.utils.UEImageNotByteException;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -49,6 +51,29 @@ public class UEImageCacheManager {
             e.printStackTrace();  
             return null;  
         }  
+    }
+    
+    public Bitmap getBitmapFromFile(String path, boolean cache2Memory){  
+        Bitmap bitmap = null;  
+        try{   
+            bitmap = new UEImage(path, true).toBitmap();
+            if(cache2Memory){  
+                mImageCache.put(path, new SoftReference<Bitmap>(bitmap));  
+                if(isExternal){
+                    String fileName = getMD5Str(path);  
+                    String filePath = this.cachedDir + "/" +fileName;  
+                    FileOutputStream fos = new FileOutputStream(filePath);  
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);  
+                }  
+            } 
+            return bitmap;  
+        }catch(IOException e){  
+            e.printStackTrace();  
+            return null;  
+        } catch (UEImageNotByteException e) {
+			e.printStackTrace();
+			return null;  
+		}  
     }
     
     public Bitmap getBitmapFromMemory(String url){  
