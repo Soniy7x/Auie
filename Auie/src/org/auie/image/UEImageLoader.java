@@ -1,6 +1,5 @@
 package org.auie.image;
 
-import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,8 +8,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.auie.utils.UETag;
-import org.auie.utils.UEImageNotByteException;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -55,29 +52,30 @@ public class UEImageLoader {
         downloadImage(url, true, callback);  
     }  
       
-    public void downloadFile(final String url, final OnUEImageLoadListener callback){  
+    public void downloadFile(final String url, final OnUEImageLoadListener callback){ 
+    	if(mSet.contains(url)){  
+            Log.w(UETag.TAG, "图片正在读取，不能重复读取");  
+            return;
+        }
     	Bitmap bitmap = cacheManager.getBitmapFromMemory(url);  
         if(bitmap != null){  
             if(callback != null){  
                 callback.onImageLoadComlepeted(bitmap, url);  
             }  
         }else{  
+        	mSet.add(url);  
             mExecutorService.submit(new Runnable(){  
                 @Override  
                 public void run() {  
-					try {
-						final Bitmap bitmap = new UEImage(url, true).toBitmap();
-						mHandler.post(new Runnable(){  
-							@Override  
-							public void run(){  
-								if(callback != null)  
-									callback.onImageLoadComlepeted(bitmap, url);  
-								mSet.remove(url);  
-							}  
-						});  
-					} catch (IOException | UEImageNotByteException e) {
-						e.printStackTrace();
-					}  
+					final Bitmap bitmap = cacheManager.getBitmapFromFile(url, true);
+					mHandler.post(new Runnable(){  
+						@Override  
+						public void run(){  
+							if(callback != null)  
+								callback.onImageLoadComlepeted(bitmap, url);  
+							mSet.remove(url);  
+						}  
+					});  
                 }  
             });  
         }  
