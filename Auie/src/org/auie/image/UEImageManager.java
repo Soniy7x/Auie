@@ -61,6 +61,7 @@ public class UEImageManager {
 				thumbnails.put(String.valueOf(id), data);
 			}while(cursor.moveToNext());
 		}
+		cursor.close();
 	}
 	
 	/**
@@ -92,6 +93,7 @@ public class UEImageManager {
 				albums.add(albumItem);
 			} while (cursor.moveToNext());
 		}
+		cursor.close();
 	}
 	
 	/**
@@ -127,6 +129,7 @@ public class UEImageManager {
 			} while (cursor.moveToNext());
 			hasCreatedBuckets = true;
 		}
+		cursor.close();
 	}
 	
 	/**
