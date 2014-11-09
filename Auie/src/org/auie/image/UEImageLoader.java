@@ -8,23 +8,29 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.auie.utils.UE;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.support.v4.util.LruCache;
 import android.util.Log;
 
 public class UEImageLoader {
 
+	private static final int LRUCACHE_SIZE = 8 * 1024 * 1024;
+	
     private static HashSet<String> mSet;
     private static Map<String,SoftReference<Bitmap>> mImageCache;   
+    private static LruCache<String, Bitmap> mLruCache;
     private static UEImageCacheManager cacheManager;  
     private static ExecutorService mExecutorService;
     private Handler mHandler;   
     
     static{  
         mSet = new HashSet<String>();  
+        mLruCache = new LruCache<String, Bitmap>(LRUCACHE_SIZE);
         mImageCache = new HashMap<String,SoftReference<Bitmap>>();  
-        cacheManager = new UEImageCacheManager(mImageCache);  
+        cacheManager = new UEImageCacheManager(mImageCache , mLruCache);  
     }  
   
     public UEImageLoader(Context context){  
@@ -49,15 +55,15 @@ public class UEImageLoader {
     
     public void downloadImage(final String url, final OnUEImageLoadListener callback){  
         downloadImage(url, true, callback);  
-    }  
-      
+    } 
+    
     public void downloadFile(final String url, final OnUEImageLoadListener callback){
     	if(mSet.contains(url)){  
-            Log.w(UE.TAG, "图片正在读取，不能重复读取");  
+            Log.w(UE.TAG, url + "图片正在读取，不能重复读取");  
             return;
         }
     	Bitmap bitmap = cacheManager.getBitmapFromMemory(url);  
-        if(bitmap != null && callback != null){  
+        if(bitmap != null && callback != null){
         	callback.onImageLoadComlepeted(bitmap, url);
         }else{  
         	mSet.add(url);  
@@ -69,7 +75,7 @@ public class UEImageLoader {
 						@Override  
 						public void run(){  
 							if(callback != null)  
-								callback.onImageLoadComlepeted(bitmap, url);  
+								callback.onImageLoadComlepeted(bitmap, url);
 							mSet.remove(url);  
 						}  
 					});  
