@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.auie.utils.UETag;
+import org.auie.utils.UE;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -29,9 +29,8 @@ public class UEImageLoader {
   
     public UEImageLoader(Context context){  
         mHandler = new Handler();  
-        startThreadPoolIfNecessary();
-        String defaultDir = context.getCacheDir().getAbsolutePath();  
-        setCachedDir(defaultDir);  
+        startThreadPoolIfNecessary(); 
+        setCachedDir(context.getCacheDir().getAbsolutePath());  
     }  
        
     public void setCache2File(boolean flag){  
@@ -42,26 +41,24 @@ public class UEImageLoader {
         cacheManager.setCachedDir(dir);  
     }  
   
-    public static void startThreadPoolIfNecessary(){  
+    public static void startThreadPoolIfNecessary(){
         if(mExecutorService == null || mExecutorService.isShutdown() || mExecutorService.isTerminated()){  
             mExecutorService = Executors.newFixedThreadPool(3);
-        }  
+        }
     }  
     
     public void downloadImage(final String url, final OnUEImageLoadListener callback){  
         downloadImage(url, true, callback);  
     }  
       
-    public void downloadFile(final String url, final OnUEImageLoadListener callback){ 
+    public void downloadFile(final String url, final OnUEImageLoadListener callback){
     	if(mSet.contains(url)){  
-            Log.w(UETag.TAG, "图片正在读取，不能重复读取");  
+            Log.w(UE.TAG, "图片正在读取，不能重复读取");  
             return;
         }
     	Bitmap bitmap = cacheManager.getBitmapFromMemory(url);  
-        if(bitmap != null){  
-            if(callback != null){  
-                callback.onImageLoadComlepeted(bitmap, url);  
-            }  
+        if(bitmap != null && callback != null){  
+        	callback.onImageLoadComlepeted(bitmap, url);
         }else{  
         	mSet.add(url);  
             mExecutorService.submit(new Runnable(){  
@@ -83,7 +80,7 @@ public class UEImageLoader {
     
     public void downloadImage(final String url, final boolean cache2Memory, final OnUEImageLoadListener callback){  
         if(mSet.contains(url)){  
-            Log.w(UETag.TAG, "图片正在下载，不能重复下载");  
+            Log.w(UE.TAG, "图片正在下载，不能重复下载");  
             return;
         }  
           
