@@ -17,15 +17,18 @@ import org.auie.utils.UEImageNotByteException;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v4.util.LruCache;
 
 public class UEImageCacheManager {
 	
-    private Map<String, SoftReference<Bitmap>> mImageCache;  
+    private Map<String, SoftReference<Bitmap>> mImageCache; 
+    private LruCache<String, Bitmap> mLruCache;
     private boolean isExternal = false;  
     private String cachedDir;  
       
-    public UEImageCacheManager(Map<String, SoftReference<Bitmap>> imageCache){  
+    public UEImageCacheManager(Map<String, SoftReference<Bitmap>> imageCache, LruCache<String, Bitmap> mLruCache){  
         this.mImageCache = imageCache;  
+        this.mLruCache = mLruCache;
     }  
          
     public Bitmap getBitmapFromHttp(String url, boolean cache2Memory){  
@@ -37,6 +40,7 @@ public class UEImageCacheManager {
             bitmap = BitmapFactory.decodeStream(is);
             if(cache2Memory){  
                 mImageCache.put(url, new SoftReference<Bitmap>(bitmap));  
+                mLruCache.put(url, bitmap);
                 if(isExternal){
                     String fileName = getMD5Str(url);  
                     String filePath = this.cachedDir + "/" +fileName;  
@@ -58,7 +62,8 @@ public class UEImageCacheManager {
         try{   
             bitmap = new UEImage(path, true).toBitmap();
             if(cache2Memory){  
-                mImageCache.put(path, new SoftReference<Bitmap>(bitmap));  
+                mImageCache.put(path, new SoftReference<Bitmap>(bitmap));
+                mLruCache.put(path, bitmap);
                 if(isExternal){
                     String fileName = getMD5Str(path);  
                     String filePath = this.cachedDir + "/" +fileName;  
@@ -87,15 +92,19 @@ public class UEImageCacheManager {
                 }  
             }  
         }
+        bitmap = mLruCache.get(url);
+        if (bitmap != null) {
+			return bitmap;
+		}
         if(isExternal){  
-            bitmap = getBitmapFromFile(url);  
+            bitmap = getBitmapFromExternal(url);  
             if(bitmap != null)  
                 mImageCache.put(url, new SoftReference<Bitmap>(bitmap));  
         }
         return bitmap;  
     }  
       
-    private Bitmap getBitmapFromFile(String url){  
+    private Bitmap getBitmapFromExternal(String url){  
         Bitmap bitmap = null;  
         String fileName = getMD5Str(url);  
         if(fileName == null)  
