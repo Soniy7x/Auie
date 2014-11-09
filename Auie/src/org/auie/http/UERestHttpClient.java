@@ -6,7 +6,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.auie.utils.UETag;
+import org.auie.utils.UE;
 
 import android.content.Context;
 import android.util.Log;
@@ -40,7 +40,7 @@ public class UERestHttpClient extends UEHttpClient{
 			try {
 				put.setEntity(new UrlEncodedFormEntity(params.getParams(), "utf-8"));
 			} catch (UnsupportedEncodingException e) {
-				Log.d(UETag.TAG, e.toString());
+				Log.d(UE.TAG, e.toString());
 			}
 		}
 		return put;
