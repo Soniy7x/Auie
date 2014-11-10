@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.auie.utils.UE;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -172,10 +174,12 @@ public class UEImageManager {
 	/**
 	 * 图片
 	 */
-	public class Image{
+	@SuppressWarnings("serial")
+	public static class Image extends UE{
+		
 		public String id;
 		public String path;
 		public String thumbnail;
-		public boolean isSelected = false;
+		
 	}
 }
