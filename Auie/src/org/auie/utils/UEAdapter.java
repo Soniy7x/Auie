@@ -21,13 +21,16 @@ public abstract class UEAdapter implements ListAdapter, SpinnerAdapter {
 	public UEAdapter(List<?> datas){
 		this.datas = changeObject(datas);
 		this.bckupDatas = this.datas;
-		if (datas.size() > 0) {
+		if (datas != null && datas.size() > 0) {
 			className = datas.get(0).getClass();
 		}
 	}
 	
 	@Override
 	public int getCount() {
+		if (datas == null) {
+			return 0;
+		}
 		return datas.size();
 	}
 
@@ -56,6 +59,9 @@ public abstract class UEAdapter implements ListAdapter, SpinnerAdapter {
 	}
 	
 	private List<Object> changeObject(List<?> datas){
+		if (datas == null) {
+			return null;
+		}
 		List<Object> objects = new ArrayList<Object>();
 		if (datas.size() > 0 ) {
 			for (int i = 0; i < datas.size(); i++) {
