@@ -20,6 +20,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Gravity;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -42,12 +43,15 @@ public class UIImagePager extends PopupWindow {
 	private RelativeLayout rootContainer;
 	private ViewPager contentContainer;
 	private LinearLayout indexContainer;
+	private UIButton actionButton;
 	
 	private List<View> indexViews = new ArrayList<View>();
 	private List<View> imageViews = new ArrayList<View>();
 	private ImageAdapter imageAdapter = new ImageAdapter();
 	private OnDismissListener onDismissListener;
+	private OnActionClickListener onActionClickListener;
 	
+	private List<?> datas;
 	private List<Bitmap> bitmaps = new ArrayList<Bitmap>();
 	
 	private int WIDTH = 0;
@@ -56,26 +60,61 @@ public class UIImagePager extends PopupWindow {
 	
 	private int currentIndex = 0;
 	
+	/**
+	 * 初始化
+	 * @param context
+	 * @param images
+	 * @throws IOException
+	 * @throws UEImageNotByteException
+	 */
 	public UIImagePager(Context context, List<Image> images) throws IOException, UEImageNotByteException{
+		this.datas = images;
 		init(context);
 		transformBitmap(images);
 	}
 	
+	/**
+	 * Image转Bitmap方法
+	 * @param images
+	 * @throws IOException
+	 * @throws UEImageNotByteException
+	 */
 	private void transformBitmap(List<Image> images) throws IOException, UEImageNotByteException{
 		bitmaps.clear();
 		for (Image image : images) {
 			bitmaps.add(new UEImage(image.path, true).toBitmap());
 		}
 		if (bitmaps.size() > 0) {
+			//判断图片数量，如果大于0生成索引
 			createIndexs();
 		}
 	}
 	
+	/**
+	 * 外部调用根据position删除视图
+	 * @param position
+	 */
+	public void romoveView(int position){
+		bitmaps.remove(position);
+		if (bitmaps.size() == 0) {
+			dismiss();
+		}
+		if (currentIndex >= bitmaps.size()) {
+			currentIndex = bitmaps.size() - 1;
+		}
+		contentContainer.removeAllViews();
+		createIndexs();
+	}
+	
+	/**
+	 * 根据图片数量生成索引项且将当前索引置为0
+	 */
 	private void createIndexs() {
 		if (indexContainer == null) {
 			return;
 		}
 		indexViews.clear();
+		imageViews.clear();
 		indexContainer.removeAllViews();
 		LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(6 * DP, 6 * DP);
 		params1.setMargins(6 * DP, 0, 0, 0);
@@ -83,8 +122,7 @@ public class UIImagePager extends PopupWindow {
 		for (int i = 0; i < bitmaps.size(); i++) {
 			View view = new View(context);
 			view.setLayoutParams(params1);
-			if (i == 0) {
-				currentIndex = 0;
+			if (i == currentIndex) {
 				view.setBackgroundDrawable(SELECTED_DRAWABLE);				
 			}else {
 				view.setBackgroundDrawable(NO_SELECTED_DRAWABLE);	
@@ -98,8 +136,14 @@ public class UIImagePager extends PopupWindow {
 			imageViews.add(imageView);
 			imageAdapter.notifyDataSetChanged();
 		}
+		contentContainer.setAdapter(imageAdapter);
+		contentContainer.setCurrentItem(currentIndex);
 	}
 	
+	/**
+	 * 初始化数据
+	 * @param context
+	 */
 	private void init(Context context){
 		((Activity) context).getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -112,28 +156,43 @@ public class UIImagePager extends PopupWindow {
 		createView();
 	}
 
+	/**
+	 * 初始化视图
+	 */
 	private void createView() {
 		setBackgroundDrawable(new BitmapDrawable());
 		setContentView(createContentView());
 		setWidth(WIDTH);
 		setHeight(HEIGHT);
 		setFocusable(true);
-		super.setOnDismissListener(new OnDismissListener() {
-			
-			@Override
-			public void onDismiss() {
-				((Activity) context).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-				if (onDismissListener != null) {
-					onDismissListener.onDismiss();
-				}
-			}
-		});
+		super.setOnDismissListener(dismissListener);
 	}
 	
+	/**
+	 * 内部销毁监听器
+	 */
+	private OnDismissListener dismissListener = new OnDismissListener() {
+		
+		@Override
+		public void onDismiss() {
+			((Activity) context).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+			if (onDismissListener != null) {
+				//传递至外部
+				onDismissListener.onDismiss();
+			}
+		}
+	};
+	
+	/**
+	 * 设置dismiss监听器，供外部调用
+	 */
 	public void setOnDismissListener(OnDismissListener listener){
 		this.onDismissListener = listener;
 	}
 
+	/**
+	 * 初始化控件
+	 */
 	private View createContentView() {
 		
 		rootContainer = new RelativeLayout(context);
@@ -143,26 +202,9 @@ public class UIImagePager extends PopupWindow {
 		LayoutParams contentParams = new LayoutParams(MATCH_PARENT, WRAP_CONTENT);
 		contentParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 		contentContainer = new ViewPager(context);
-		contentContainer.setLayoutParams(contentParams);
 		contentContainer.setAdapter(imageAdapter);
-		contentContainer.setOnPageChangeListener(new OnPageChangeListener() {
-			
-			@Override
-			public void onPageSelected(int index) {
-				indexViews.get(currentIndex).setBackgroundDrawable(NO_SELECTED_DRAWABLE);
-				indexViews.get(index).setBackgroundDrawable(SELECTED_DRAWABLE);
-				currentIndex = index;
-			}
-			
-			@Override
-			public void onPageScrolled(int arg0, float arg1, int arg2) {
-			}
-			
-			@Override
-			public void onPageScrollStateChanged(int index) {
-				
-			}
-		});
+		contentContainer.setLayoutParams(contentParams);
+		contentContainer.setOnPageChangeListener(onPageChangeListener);
 		
 		LayoutParams params = new LayoutParams(MATCH_PARENT, WRAP_CONTENT);
 		params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
@@ -172,18 +214,94 @@ public class UIImagePager extends PopupWindow {
 		indexContainer.setGravity(Gravity.CENTER);
 		indexContainer.setOrientation(LinearLayout.HORIZONTAL);
 		
+		LayoutParams params2 = new LayoutParams(60 * DP, 32 * DP);
+		params2.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+		params2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+		params2.setMargins(10 * DP, 0, 0, 10 * DP);
+		actionButton = new UIButton(context);
+		actionButton.setLayoutParams(params2);
+		actionButton.setText("删除");
+		actionButton.setTextSize(14);
+		actionButton.setVisibility(View.GONE);
+		actionButton.setTextColor(Color.WHITE);
+		actionButton.setBackgroundColor(Color.RED);
+		actionButton.setOnClickListener(onClickListener);
+		
 		rootContainer.addView(contentContainer);
 		rootContainer.addView(indexContainer);
+		rootContainer.addView(actionButton);
 		
 		return rootContainer;
 	}
 	
+	/**
+	 * 视图切换监听器
+	 */
+	private OnPageChangeListener onPageChangeListener = new OnPageChangeListener() {
+		
+		@Override
+		public void onPageSelected(int index) {
+			indexViews.get(currentIndex).setBackgroundDrawable(NO_SELECTED_DRAWABLE);
+			indexViews.get(index).setBackgroundDrawable(SELECTED_DRAWABLE);
+			currentIndex = index;
+		}
+		
+		@Override
+		public void onPageScrolled(int arg0, float arg1, int arg2) {
+		}
+		
+		@Override
+		public void onPageScrollStateChanged(int index) {
+			
+		}
+	};
+	
+	/**
+	 * 操作按钮点击事件
+	 */
+	private OnClickListener onClickListener = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			if (onActionClickListener != null) {
+				//回传给外部使用
+				onActionClickListener.onActionClicked(currentIndex, datas.get(currentIndex));
+			}
+		}
+	};
+	
+	/**
+	 * 控件默认展示
+	 * @return
+	 */
 	public UIImagePager show(){
 		showAtLocation(((ViewGroup)(((Activity) context).findViewById(android.R.id.content))).getChildAt(0), Gravity.BOTTOM, 0, 0);
 		return this;
 	}
 	
+	/**
+	 * 显示按钮且添加按钮点击事件处理
+	 * @param onActionClickListener
+	 */
+	public void showAction(OnActionClickListener onActionClickListener){
+		actionButton.setVisibility(View.VISIBLE);
+		this.onActionClickListener = onActionClickListener;
+	}
 	
+	/**
+	 * 隐藏操作按钮
+	 */
+	public void hideAction(){
+		actionButton.setVisibility(View.GONE);
+		this.onActionClickListener = null;
+	}
+	
+	/**
+	 * 操作按钮点击监听器
+	 */
+	public interface OnActionClickListener{
+		public void onActionClicked(int position, Object object);
+	}
 	
 	class ImageAdapter extends PagerAdapter{
 		
@@ -199,12 +317,14 @@ public class UIImagePager extends PopupWindow {
 
 		@Override
 		public void destroyItem(View container, int position, Object object) {
-			((ViewPager) container).removeView(imageViews.get(position));
+			if (position < imageViews.size()) {
+				((ViewGroup) container).removeView(imageViews.get(position));				
+			}
 		}
 
 		@Override
 		public Object instantiateItem(View container, int position) {
-			((ViewPager) container).addView(imageViews.get(position));
+			((ViewGroup) container).addView(imageViews.get(position));
 			return imageViews.get(position);
 		}
 	}
