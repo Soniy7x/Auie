@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.auie.image.UEImage;
 import org.auie.image.UEImageLoader;
-import org.auie.image.UEImageManager;
 import org.auie.image.UEImageLoader.OnUEImageLoadListener;
+import org.auie.image.UEImageManager;
 import org.auie.image.UEImageManager.Bucket;
 import org.auie.image.UEImageManager.Image;
 import org.auie.utils.UEAdapter;
@@ -18,9 +17,11 @@ import org.auie.utils.UEMethod;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.provider.MediaStore;
 import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -32,16 +33,15 @@ import android.view.WindowManager;
 import android.view.animation.TranslateAnimation;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
+import android.widget.TextView;
 
 @SuppressWarnings("deprecation")
 public class UIPhotoSelector extends PopupWindow {
@@ -49,8 +49,10 @@ public class UIPhotoSelector extends PopupWindow {
 	private static final int MATCH_PARENT1 = LinearLayout.LayoutParams.MATCH_PARENT;
 	private static final int MATCH_PARENT2 = RelativeLayout.LayoutParams.MATCH_PARENT;
 	
+	public static final int PHOTO_CAMERA = 1992;
+	
 	private Context context;
-	private GridView photoGridView;
+	private UIGridView photoGridView;
 	private ListView bucketListView;
 	private LinearLayout rootContainer;
 	private RelativeLayout topContainer;
@@ -59,12 +61,13 @@ public class UIPhotoSelector extends PopupWindow {
 	private RelativeLayout bottomContainer;
 	private UIButton bottomLeftButton;
 	private UIButton bottomRightButton;
-	private View bottomLineView;
+	private View topLineView;
 	
 	private int WIDTH = 0;
 	private int HEIGHT = 0;
 	private int IMAGE_SIZE = 0;
 	private int DP = 1;
+	private int COUNT_MAX = 99;
 	
 	private List<Image> selectImages = new ArrayList<>();
 	private List<Image> images;
@@ -73,14 +76,22 @@ public class UIPhotoSelector extends PopupWindow {
 	private ImageAdapter adapter;
 	private BucketAdapter bucketAdapter;
 	
+	private UEImageLoader mImageLoader;
+	
 	private OnUIPhotoSelectorListener selectorListener;
 	
 	public UIPhotoSelector(Context context, OnUIPhotoSelectorListener listener) {
+		this(context, 99, listener);
+	}
+	
+	public UIPhotoSelector(Context context, int count, OnUIPhotoSelectorListener listener) {
 		WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		WindowManager.LayoutParams attrs = ((Activity) context).getWindow().getAttributes();
 		this.context = context;
 		this.selectorListener = listener;
+		this.COUNT_MAX = count;
 		this.DP = UEMethod.dp2px(context, 1);
+		this.mImageLoader = new UEImageLoader(context);
 		if((attrs.flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == WindowManager.LayoutParams.FLAG_FULLSCREEN){
 			this.HEIGHT = manager.getDefaultDisplay().getHeight();
 		}else {
@@ -110,7 +121,7 @@ public class UIPhotoSelector extends PopupWindow {
 				images = bucket.images;
 			}
 		}
-		if (images == null) {			
+		if (images == null && buckets.size() > 0) {	
 			images = buckets.get(buckets.size() - 1).images;
 		}
 		adapter = new ImageAdapter(images);
@@ -120,19 +131,20 @@ public class UIPhotoSelector extends PopupWindow {
 	private OnClickListener topLeftClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			if (selectorListener != null) {
-				selectorListener.onSelectCancel();
-			}
-			dismiss();
+			Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);  
+            ((Activity)context).startActivityForResult(intent, PHOTO_CAMERA);
 		}
 	};
 	
 	private OnClickListener topRightClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			if (selectImages.size() > 0 && selectorListener != null) {
-				selectorListener.onSelectCompleted(selectImages);
-				dismiss();
+			if (selectImages.size() > 0) {
+				try {
+					new UIImagePager(context, selectImages).show();
+				} catch (IOException | UEImageNotByteException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	};
@@ -189,12 +201,9 @@ public class UIPhotoSelector extends PopupWindow {
 	private OnClickListener bottomRightClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			if (selectImages.size() > 0) {
-				try {
-					new UIImagePager(context, selectImages).show();
-				} catch (IOException | UEImageNotByteException e) {
-					e.printStackTrace();
-				}
+			if (selectImages.size() > 0 && selectorListener != null) {
+				selectorListener.onSelectCompleted(selectImages);
+				dismiss();
 			}
 		}
 	};
@@ -214,19 +223,23 @@ public class UIPhotoSelector extends PopupWindow {
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			ImageView imageView = (ImageView) ((RelativeLayout)view).getChildAt(1);
 			if (imageView.getVisibility() == View.INVISIBLE) {
+				if (selectImages.size() >= COUNT_MAX) {
+					UIToast.show(context, "只能选择" + COUNT_MAX + "照片");
+					return;
+				}
 				imageView.setVisibility(View.VISIBLE);
 				selectImages.add(images.get(position));
 			}else {
 				imageView.setVisibility(View.INVISIBLE);
 				selectImages.remove(images.get(position));
 			}
-			bottomRightButton.setText("预览(" + selectImages.size() + ")");
+			topRightButton.setText("预览(" + selectImages.size() + ")");
 			if (selectImages.size() > 0) {
-				bottomRightButton.setTextColor(Color.parseColor("#EFEFEF"));
-				topRightButton.setVisibility(View.VISIBLE);
+				topRightButton.setTextColor(Color.parseColor("#EFEFEF"));
+				bottomRightButton.setVisibility(View.VISIBLE);
 			}else {
-				bottomRightButton.setTextColor(Color.parseColor("#5F5F5F"));
-				topRightButton.setVisibility(View.GONE);
+				topRightButton.setTextColor(Color.parseColor("#5F5F5F"));
+				bottomRightButton.setVisibility(View.GONE);
 			}
 		}
 	};
@@ -259,37 +272,44 @@ public class UIPhotoSelector extends PopupWindow {
 		topContainer.setLayoutParams(getParams1(MATCH_PARENT1, 48 * DP));
 		topContainer.setBackgroundColor(Color.parseColor("#2e3334"));
 		
-		LayoutParams topLeftParams = (LayoutParams) getParams2(60 * DP, MATCH_PARENT2);
+		LayoutParams topLeftParams = (LayoutParams) getParams2(66 * DP, MATCH_PARENT2);
 		topLeftParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
 		topLeftParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
 		topLeftButton = new UIButton(context);
 		topLeftButton.setLayoutParams(topLeftParams);
+		topLeftButton.setTextSize(34);
+		topLeftButton.setImageResource(android.R.drawable.ic_menu_camera);
 		topLeftButton.setBackgroundColor(Color.parseColor("#2e3334"));
-		topLeftButton.setImageDrawable(context.getResources().getDrawable(android.R.drawable.ic_menu_revert));
 		topLeftButton.setOnClickListener(topLeftClickListener);
 		
-		LayoutParams topRightParams = (LayoutParams) getParams2(60 * DP, 30 * DP);
+		LayoutParams topRightParams = (LayoutParams) getParams2(80 * DP, 30 * DP);
 		topRightParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
 		topRightParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-		topRightParams.setMargins(0, 8 * DP, 8 * DP, 0);
 		topRightButton = new UIButton(context);
+		topRightButton.setId(1992);
+		topRightButton.setText("预览");
+		topRightButton.setTextColor(Color.parseColor("#5F5F5F"));
+		topRightButton.setBackgroundColor(Color.parseColor("#2e3334"));
 		topRightButton.setLayoutParams(topRightParams);
-		topRightButton.setTextSize(12);
-		topRightButton.setVisibility(View.GONE);
-		topRightButton.setText("完成");
-		topRightButton.setTextColor(Color.parseColor("#FFFFFF"));
-		topRightButton.setBackgroundColor(Color.parseColor("#00b58a"));
 		topRightButton.setOnClickListener(topRightClickListener);
+		
+		LayoutParams topLineParams = (LayoutParams) getParams2((int)(0.8 * DP), MATCH_PARENT2);
+		topLineParams.addRule(RelativeLayout.LEFT_OF, 1992);
+		topLineParams.setMargins(0, 8 * DP, 0, 8 * DP);
+		topLineView = new View(context);
+		topLineView.setLayoutParams(topLineParams);
+		topLineView.setBackgroundColor(Color.parseColor("#555555"));
 		
 		topContainer.addView(topLeftButton);
 		topContainer.addView(topRightButton);
+		topContainer.addView(topLineView);
 		
 		/**
 		 * 相片视图
 		 */
 		LinearLayout.LayoutParams photoParams = getParams(MATCH_PARENT1, 0, 1);
 		photoParams.setMargins(0, (int)(0.8 * DP), 0, (int)(0.8 * DP));
-		photoGridView = new GridView(context);
+		photoGridView = new UIGridView(context);
 		photoGridView.setLayoutParams(photoParams);
 		photoGridView.setBackgroundColor(Color.parseColor("#242424"));
 		photoGridView.setHorizontalSpacing(2 * DP);
@@ -315,29 +335,23 @@ public class UIPhotoSelector extends PopupWindow {
 		bottomLeftButton.setTextColor(Color.parseColor("#B8B8B8"));
 		bottomLeftButton.setBackgroundColor(Color.parseColor("#2e3334"));
 		bottomLeftButton.setOnClickListener(bottomLeftClickListener);
-		
-		LayoutParams bottomRightParams = (LayoutParams) getParams2(80 * DP, 30 * DP);
+
+		LayoutParams bottomRightParams = (LayoutParams) getParams2(60 * DP, 30 * DP);
 		bottomRightParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
 		bottomRightParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+		bottomRightParams.setMargins(0, 8 * DP, 8 * DP, 0);
 		bottomRightButton = new UIButton(context);
-		bottomRightButton.setId(1992);
-		bottomRightButton.setText("预览");
-		bottomRightButton.setTextColor(Color.parseColor("#5F5F5F"));
-		bottomRightButton.setBackgroundColor(Color.parseColor("#2e3334"));
 		bottomRightButton.setLayoutParams(bottomRightParams);
+		bottomRightButton.setTextSize(12);
+		bottomRightButton.setVisibility(View.GONE);
+		bottomRightButton.setText("完成");
+		bottomRightButton.setTextColor(Color.parseColor("#FFFFFF"));
+		bottomRightButton.setBackgroundColor(Color.parseColor("#00b58a"));
 		bottomRightButton.setOnClickListener(bottomRightClickListener);
-		
-		LayoutParams bottomLineParams = (LayoutParams) getParams2((int)(0.8 * DP), MATCH_PARENT2);
-		bottomLineParams.addRule(RelativeLayout.LEFT_OF, 1992);
-		bottomLineParams.setMargins(0, 8 * DP, 0, 8 * DP);
-		bottomLineView = new View(context);
-		bottomLineView.setLayoutParams(bottomLineParams);
-		bottomLineView.setBackgroundColor(Color.parseColor("#555555"));
 		
 		
 		bottomContainer.addView(bottomLeftButton);
 		bottomContainer.addView(bottomRightButton);
-		bottomContainer.addView(bottomLineView);
 		
 		/**
 		 * 相册视图
@@ -407,7 +421,7 @@ public class UIPhotoSelector extends PopupWindow {
 				return convertView;
 			}
 			final ImageView ImageView = holder.icon;
-			new UEImageLoader(context).downloadFile(thumbPath == null ? path : thumbPath, new OnUEImageLoadListener() {
+			mImageLoader.downloadFile(thumbPath == null ? path : thumbPath, new OnUEImageLoadListener() {
 				
 				@Override
 				public void onImageLoadComlepeted(Bitmap bitmap, String imageUrl) {
@@ -432,6 +446,9 @@ public class UIPhotoSelector extends PopupWindow {
 		@SuppressLint("InflateParams")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
+			if (photoGridView.isMeasure() && convertView != null) {
+				return convertView;
+			}
 			ImageView imageView;
 			RelativeLayout mContainer = new RelativeLayout(context);
 			mContainer.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.WRAP_CONTENT,AbsListView.LayoutParams.WRAP_CONTENT));
@@ -449,6 +466,9 @@ public class UIPhotoSelector extends PopupWindow {
 			mContainer.addView(selectImageView);
 			convertView = mContainer;
 			convertView.setTag(imageView);
+			if (photoGridView.isMeasure()) {
+				return convertView;
+			}
 			String path = ((Image)getItem(position)).thumbnail;
 			if (path == null) {
 				path = ((Image)getItem(position)).path;
@@ -457,15 +477,19 @@ public class UIPhotoSelector extends PopupWindow {
 				return convertView;
 			}
 			final ImageView iv = imageView;
-			new UEImageLoader(context).downloadFile(path, new OnUEImageLoadListener() {
+			mImageLoader.downloadFile(path, new OnUEImageLoadListener() {
 				@Override
 				public void onImageLoadComlepeted(Bitmap bitmap, String imageUrl) {
-					iv.setImageBitmap(new UEImage(bitmap).compressOnlyQuality(50).toBitmap());
+					iv.setImageBitmap(bitmap);
 				}
 			});
 			return convertView;
 		}
 		
+	}
+	
+	public void setTopLeftButtonImageResources(int resId){
+		topLeftButton.setImageResource(resId);
 	}
 	
 	public interface OnUIPhotoSelectorListener{
