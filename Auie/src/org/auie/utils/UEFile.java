@@ -2,10 +2,13 @@ package org.auie.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.text.DecimalFormat;
 
 import android.content.Context;
 
 public final class UEFile {
+	
+	private static DecimalFormat mDecimalFormat = new DecimalFormat("0.0");
 	
 	/**
 	 * 清空当前程序缓存
@@ -32,12 +35,12 @@ public final class UEFile {
 		}
 		if (file.isDirectory()) {
 			for (File f : file.listFiles()) {
-				return f.delete();
+				deleteFile(f);
 			}
+			return file.delete();
 		}else {
 			return file.delete();
 		}
-		return false;
 	}
 	
 	/**
@@ -64,11 +67,11 @@ public final class UEFile {
 		if (size < 1024) {
 			return size + "B";
 		}else if (size < Math.pow(1024, 2)) {
-			return size / 1024 + "K";
+			return mDecimalFormat.format(size / 1024) + "K";
 		}else if (size < Math.pow(1024, 3)) {
-			return size / Math.pow(1024, 2) + "M";
+			return mDecimalFormat.format(size / Math.pow(1024, 2)) + "M";
 		}else {
-			return size / Math.pow(1024, 3) + "G";
+			return mDecimalFormat.format(size / Math.pow(1024, 3)) + "G";
 		}
 	}
 	
