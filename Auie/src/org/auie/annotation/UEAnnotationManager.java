@@ -49,7 +49,7 @@ public class UEAnnotationManager {
 	}
 	
 	/**
-	 * 初始化字体
+	 * 初始化Activity字体
 	 */
 	public void initializeFont(Activity context, Typeface typeface){
 		Field[] fields = context.getClass().getDeclaredFields();
@@ -61,7 +61,35 @@ public class UEAnnotationManager {
 	}
 	
 	/**
-	 * 初始化字体
+	 * 初始化Fragment字体
+	 */
+	public void initializeFont(Fragment fragment, Typeface typeface){
+		Field[] fields = fragment.getClass().getDeclaredFields();
+		for (Field field : fields) {
+			if (field.isAnnotationPresent(UEID.class)) {
+				setFont(fragment, field, typeface);
+			}
+		}
+	}
+	
+	/**
+	 * 初始化Fragment字体
+	 */
+	private void setFont(Fragment fragment, Field field, Typeface typeface){
+		field.setAccessible(true);
+		try {
+			Object object = field.get(fragment);
+			if (object instanceof TextView || object instanceof EditText || object instanceof Button) {
+				field.getType().getMethod("setTypeface", Typeface.class).invoke(object, typeface);
+			}
+		}catch (Exception e) {
+			Log.e("Deliration", e.toString());
+			Log.e("Deliration", "资源错误 - 字体设置失败");
+		}
+	}
+	
+	/**
+	 * 初始化Activity字体
 	 */
 	private void setFont(Context context, Field field, Typeface typeface){
 		field.setAccessible(true);

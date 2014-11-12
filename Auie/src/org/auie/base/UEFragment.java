@@ -69,7 +69,7 @@ public abstract class UEFragment extends Fragment implements OnClickListener{
 	 * 自定义字体
 	 */
 	protected void initializeFont(Typeface typeface) {
-		UEAnnotationManager.getInstance().initializeFont(activity, typeface);
+		UEAnnotationManager.getInstance().initializeFont(this, typeface);
 	}
 	
 	/**

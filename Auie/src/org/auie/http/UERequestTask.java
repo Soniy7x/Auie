@@ -38,7 +38,6 @@ public class UERequestTask extends AsyncTask<Void, Void, UEResponseHolder>{
 				entity = new BufferedHttpEntity(entity);
 			}
 		} catch (Exception e){
-			Log.d(UE.TAG, e.toString());
 			return new UEResponseHolder(e, request.getListener());
 		}
 		return new UEResponseHolder(entity, request.getListener());
