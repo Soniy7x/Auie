@@ -31,10 +31,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class UEAnnotationManager {
+/**
+ * 
+ * UEAnnotationManager
+ * 注释管理类 · 提供自定义注释解析以及控件初始化
+ * 
+ * @author Soniy7x
+ */
+public final class UEAnnotationManager {
  
+	//单一实例
 	private static UEAnnotationManager instance = null;
 
+	/**
+	 * 私有化构造方法
+	 */
 	private UEAnnotationManager() {}
 
 	/**
@@ -54,6 +65,7 @@ public class UEAnnotationManager {
 	public void initializeFont(Activity context, Typeface typeface){
 		Field[] fields = context.getClass().getDeclaredFields();
 		for (Field field : fields) {
+			//判断是否含有UEID注释
 			if (field.isAnnotationPresent(UEID.class)) {
 				setFont(context, field, typeface);
 			}
@@ -80,6 +92,7 @@ public class UEAnnotationManager {
 		try {
 			Object object = field.get(fragment);
 			if (object instanceof TextView || object instanceof EditText || object instanceof Button) {
+				//反射机制调用方法设置参数
 				field.getType().getMethod("setTypeface", Typeface.class).invoke(object, typeface);
 			}
 		}catch (Exception e) {
