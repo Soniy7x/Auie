@@ -5,44 +5,92 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.ref.SoftReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import org.auie.utils.UEImageNotByteException;
+import org.auie.utils.UEString;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.util.LruCache;
 
-public class UEImageCacheManager {
+/**
+ * 
+ * 图片缓存类(Image Cache Class)
+ * 
+ * 图片缓存管理，提供双缓存(软缓存与硬缓存)+外置存储，支持缓存本地文件URL与互联网URL
+ * (Image cache manager, offer Double Cache(SoftReference + LruCache) and External Storage,
+ * support to cache local file and HTTP file)
+ * 
+ * @author Soniy7x
+ *
+ */
+public final class UEImageCacheManager {
 	
+	//软缓存(SoftReference)
     private Map<String, SoftReference<Bitmap>> mImageCache; 
+    //硬缓存(LruCache)
     private LruCache<String, Bitmap> mLruCache;
-    private boolean isExternal = false;  
-    private String cachedDir;  
+    //是否使用外置存储(Whether to use external storage)
+    private boolean external = false;  
+    //外置存储文件夹(External storage folder)
+    private String cachedDir;
       
+    /**
+     * 初始化方法(Constructor)
+     * @param imageCache 软缓存(SoftReference)
+     * @param mLruCache 硬缓存(LruCache)
+     */
     public UEImageCacheManager(Map<String, SoftReference<Bitmap>> imageCache, LruCache<String, Bitmap> mLruCache){  
+        this(imageCache, mLruCache, false, null);
+    }  
+    
+    /**
+     * 初始化方法(Constructor)
+     * @param imageCache 软缓存(SoftReference)
+     * @param mLruCache 硬缓存(LruCache)
+     * @param external 是否使用外置存储(Whether to use external storage)
+     * @param cachedDir 外置存储文件夹(External storage folder)
+     */
+    public UEImageCacheManager(Map<String, SoftReference<Bitmap>> imageCache, LruCache<String, Bitmap> mLruCache, boolean external, String cachedDir){  
         this.mImageCache = imageCache;  
         this.mLruCache = mLruCache;
-    }  
-         
-    public Bitmap getBitmapFromHttp(String url, boolean cache2Memory){  
+        this.external = external;
+        this.cachedDir = cachedDir;
+    }
+    
+    /**
+     * 设置是否使用外置存储
+     * (Set whether to use external storage, if external is true that cacheDir shouldn't null)
+     * @param external 是否使用外置存储(Whether to use external storage)
+     * @param cacheDir 外置存储文件夹(External storage folder)
+     */
+    public void setExternal(boolean external, String cacheDir){
+    	this.external = external;
+    	this.cachedDir = cacheDir;
+    }
+    
+    /**
+     * 从网络下载图片(Download Image from HTTP)
+     * @param url 图片地址(Image address)
+     * @param cache 是否缓存(Whether to cache)
+     * @return Bitmap
+     */
+    public Bitmap getBitmapFromHttp(String url, boolean cache){  
         Bitmap bitmap = null;  
         try{  
             URL u = new URL(url);  
             HttpURLConnection conn = (HttpURLConnection)u.openConnection();    
             InputStream is = conn.getInputStream();  
             bitmap = BitmapFactory.decodeStream(is);
-            if(cache2Memory){  
+            if(cache){
                 mImageCache.put(url, new SoftReference<Bitmap>(bitmap));  
                 mLruCache.put(url, bitmap);
-                if(isExternal){
-                    String fileName = getMD5Str(url);  
+                if(external){
+                    String fileName = UEString.encryptMD5(url);  
                     String filePath = this.cachedDir + "/" +fileName;  
                     FileOutputStream fos = new FileOutputStream(filePath);  
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);  
@@ -51,36 +99,44 @@ public class UEImageCacheManager {
             is.close();  
             conn.disconnect();  
             return bitmap;  
-        }catch(IOException e){  
-            e.printStackTrace();  
+        }catch(IOException e){   
             return null;  
-        }  
+        }
     }
     
-    public Bitmap getBitmapFromFile(String path, boolean cache2Memory){  
+    /**
+     * 从本地文件下载图片(Download Image from Local File)
+     * @param path 图片地址(Image address)
+     * @param cache 是否缓存(Whether to cache)
+     * @return Bitmap
+     */
+    public Bitmap getBitmapFromFile(String path, boolean cache){  
         Bitmap bitmap = null;  
         try{   
             bitmap = new UEImage(path, true).toBitmap();
-            if(cache2Memory){  
+            if(cache){  
                 mImageCache.put(path, new SoftReference<Bitmap>(bitmap));
                 mLruCache.put(path, bitmap);
-                if(isExternal){
-                    String fileName = getMD5Str(path);  
+                if(external){
+                    String fileName = UEString.encryptMD5(path);  
                     String filePath = this.cachedDir + "/" +fileName;  
                     FileOutputStream fos = new FileOutputStream(filePath);  
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);  
                 }  
             } 
             return bitmap;  
-        }catch(IOException e){  
-            e.printStackTrace();  
+        }catch(IOException e){
             return null;  
         } catch (UEImageNotByteException e) {
-			e.printStackTrace();
 			return null;  
 		}  
     }
     
+    /**
+     * 从缓存中获取图片(Get Image From Cache(Memory + External storage))
+     * @param url 图片地址(Image address)
+     * @return Bitmap
+     */
     public Bitmap getBitmapFromMemory(String url){  
         Bitmap bitmap = null;  
         if(mImageCache.containsKey(url)){  
@@ -96,17 +152,22 @@ public class UEImageCacheManager {
         if (bitmap != null) {
 			return bitmap;
 		}
-        if(isExternal){  
+        if(external){  
             bitmap = getBitmapFromExternal(url);  
             if(bitmap != null)  
                 mImageCache.put(url, new SoftReference<Bitmap>(bitmap));  
         }
         return bitmap;  
     }  
-      
+    
+    /**
+     * 从外置存储中获取图片(Get Image From External storage)
+     * @param url 图片地址(Image address)
+     * @return Bitmap
+     */
     private Bitmap getBitmapFromExternal(String url){  
         Bitmap bitmap = null;  
-        String fileName = getMD5Str(url);  
+        String fileName = UEString.encryptMD5(url);  
         if(fileName == null)  
             return null;  
         String filePath = cachedDir + "/" + fileName;   
@@ -118,38 +179,5 @@ public class UEImageCacheManager {
             bitmap = null;  
         }  
         return bitmap;  
-    }  
-          
-    private static String getMD5Str(String str) {     
-        MessageDigest messageDigest = null;     
-        try {     
-            messageDigest = MessageDigest.getInstance("MD5");     
-            messageDigest.reset();     
-            messageDigest.update(str.getBytes("UTF-8"));     
-        } catch (NoSuchAlgorithmException e) {   
-            return null;  
-        } catch (UnsupportedEncodingException e) {
-            return null;  
-        }     
-     
-        byte[] byteArray = messageDigest.digest();     
-        StringBuffer md5StrBuff = new StringBuffer();     
-        for (int i = 0; i < byteArray.length; i++) {                 
-            if (Integer.toHexString(0xFF & byteArray[i]).length() == 1)     
-                md5StrBuff.append("0").append(Integer.toHexString(0xFF & byteArray[i]));     
-            else     
-                md5StrBuff.append(Integer.toHexString(0xFF & byteArray[i]));     
-        }     
-     
-        return md5StrBuff.toString();     
-    } 
-    
-    
-    public void setCache2File(boolean flag){  
-        isExternal = flag;  
-    }  
-       
-    public void setCachedDir(String cacheDir){  
-        this.cachedDir = cacheDir;  
-    } 
+    }
 }
