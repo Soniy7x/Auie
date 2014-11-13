@@ -15,17 +15,35 @@ import android.os.Handler;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
-public class UEImageLoader {
+/**
+ * 
+ * 图片加载类(Image Load Class)
+ * 
+ * 提供从网络或文件加载并缓存图片
+ * (Provide to load Image from network or file)
+ * 
+ * @author Soniy7x
+ * 
+ */
+public final class UEImageLoader {
 
+	//硬缓存大小(LruCache size)
 	private static final int LRUCACHE_SIZE = 8 * 1024 * 1024;
-	
+	//下载中的URL集合(Downloading URL Collection)
     private static HashSet<String> mSet;
+    //软缓存(SoftReference)
     private static Map<String,SoftReference<Bitmap>> mImageCache;   
+    //硬缓存(LruCache)
     private static LruCache<String, Bitmap> mLruCache;
+    //图片缓存管理类(Image Cache Manager)
     private static UEImageCacheManager cacheManager;  
+    //线程池对象(ExecutorService)
     private static ExecutorService mExecutorService;
     private Handler mHandler;   
     
+    /**
+     * 静态对象初始化(Static Object initialization)
+     */
     static{  
         mSet = new HashSet<String>();  
         mLruCache = new LruCache<String, Bitmap>(LRUCACHE_SIZE);
@@ -33,58 +51,51 @@ public class UEImageLoader {
         cacheManager = new UEImageCacheManager(mImageCache , mLruCache);  
     }  
   
+    /**
+     * 构造方法(Constructor)
+     * @param context 上下文
+     */
     public UEImageLoader(Context context){  
         mHandler = new Handler();  
         startThreadPoolIfNecessary(); 
-        setCachedDir(context.getCacheDir().getAbsolutePath());  
-    }  
-       
-    public void setCache2File(boolean flag){  
-        cacheManager.setCache2File(flag);  
+        setExternal(true, context.getCacheDir().getAbsolutePath());
     }  
     
-    public void setCachedDir(String dir){  
-        cacheManager.setCachedDir(dir);  
-    }  
+    /**
+     * 设置是否使用外置存储
+     * (Set whether to use external storage, if external is true that cacheDir shouldn't null)
+     * @param external 是否使用外置存储(Whether to use external storage)
+     * @param cacheDir 外置存储文件夹(External storage folder)
+     */
+    public void setExternal(boolean external, String cacheDir){
+    	cacheManager.setExternal(external, cacheDir);
+    }
   
+    /**
+     * 开启线程池(start ThreadPool)
+     */
     public static void startThreadPoolIfNecessary(){
         if(mExecutorService == null || mExecutorService.isShutdown() || mExecutorService.isTerminated()){  
             mExecutorService = Executors.newFixedThreadPool(3);
         }
     }  
     
+    /**
+     * 从网络下载图片并缓存(Download and Cache Image from HTTP)
+     * @param url 图片地址(Image Address)
+     * @param callback 回调方法(callback method)
+     */
     public void downloadImage(final String url, final OnUEImageLoadListener callback){  
         downloadImage(url, true, callback);  
     } 
     
-    public void downloadFile(final String url, final OnUEImageLoadListener callback){
-    	if(mSet.contains(url)){  
-            Log.w(UE.TAG, url + "图片正在读取，不能重复读取");  
-            return;
-        }
-    	Bitmap bitmap = cacheManager.getBitmapFromMemory(url);  
-        if(bitmap != null && callback != null){
-        	callback.onImageLoadComlepeted(bitmap, url);
-        }else{  
-        	mSet.add(url);  
-            mExecutorService.submit(new Runnable(){  
-                @Override  
-                public void run() {  
-					final Bitmap bitmap = cacheManager.getBitmapFromFile(url, true);
-					mHandler.post(new Runnable(){  
-						@Override  
-						public void run(){  
-							if(callback != null)  
-								callback.onImageLoadComlepeted(bitmap, url);
-							mSet.remove(url);  
-						}  
-					});  
-                }  
-            });  
-        }  
-    }
-    
-    public void downloadImage(final String url, final boolean cache2Memory, final OnUEImageLoadListener callback){  
+    /**
+     * 从网络下载图片(Download Image from HTTP)
+     * @param url 图片地址(Image Address)
+     * @param cache 是否缓存(Whether to cache)
+     * @param callback 回调方法(callback method)
+     */
+    public void downloadImage(final String url, final boolean cache, final OnUEImageLoadListener callback){  
         if(mSet.contains(url)){  
             Log.w(UE.TAG, "图片正在下载，不能重复下载");  
             return;
@@ -93,34 +104,82 @@ public class UEImageLoader {
         Bitmap bitmap = cacheManager.getBitmapFromMemory(url);  
         if(bitmap != null){  
             if(callback != null){  
-                callback.onImageLoadComlepeted(bitmap, url);  
+                callback.onImageLoadCompleted(bitmap, url);  
             }  
         }else{
             mSet.add(url);  
             mExecutorService.submit(new Runnable(){  
                 @Override  
                 public void run() {  
-                    final Bitmap bitmap = cacheManager.getBitmapFromHttp(url, cache2Memory);  
+                    final Bitmap bitmap = cacheManager.getBitmapFromHttp(url, cache);  
                     mHandler.post(new Runnable(){  
                         @Override  
                         public void run(){  
                             if(callback != null)  
-                                callback.onImageLoadComlepeted(bitmap, url);  
+                                callback.onImageLoadCompleted(bitmap, url);  
                             mSet.remove(url);  
                         }  
                     });  
                 }  
             });  
         }  
-    }  
-      
-    public void preLoadNextImage(final String url){    
-        downloadImage(url, null);  
-    }  
+    }
     
+    /**
+     * 从文件下载图片并缓存(Download and Cache Image from File)
+     * @param url 图片地址(Image Address)
+     * @param callback 回调方法(callback method)
+     */
+    public void downloadFile(final String url, final OnUEImageLoadListener callback){  
+    	downloadFile(url, true, callback);  
+    } 
     
-    public interface OnUEImageLoadListener{   
-        public void onImageLoadComlepeted(Bitmap bitmap, String imageUrl);  
+    /**
+     * 从文件下载图片(Download Image from File)
+     * @param url 图片地址(Image Address)
+     * @param cache 是否缓存(Whether to cache)
+     * @param callback 回调方法(callback method)
+     */
+    public void downloadFile(final String url, final boolean cache, final OnUEImageLoadListener callback){
+    	if(mSet.contains(url)){  
+            Log.w(UE.TAG, url + "图片正在读取，不能重复读取");  
+            return;
+        }
+    	Bitmap bitmap = cacheManager.getBitmapFromMemory(url);  
+        if(bitmap != null && callback != null){
+        	callback.onImageLoadCompleted(bitmap, url);
+        }else{  
+        	mSet.add(url);  
+            mExecutorService.submit(new Runnable(){  
+                @Override  
+                public void run() {  
+					final Bitmap bitmap = cacheManager.getBitmapFromFile(url, cache);
+					mHandler.post(new Runnable(){  
+						@Override  
+						public void run(){  
+							if(callback != null)  
+								callback.onImageLoadCompleted(bitmap, url);
+							mSet.remove(url);  
+						}  
+					});  
+                }  
+            });  
+        }  
+    }
+    
+    /**
+     * 
+     * 图片加载监听器(Image Load Listener)
+     * 
+     * @author Soniy7x
+     */
+    public interface OnUEImageLoadListener{ 
+    	/**
+    	 * 图片加载完成(Image load completed)
+    	 * @param bitmap 加载到的图片(Is loaded into the Image)
+    	 * @param imageUrl 图片地址(Image address)
+    	 */
+        public void onImageLoadCompleted(Bitmap bitmap, String imageUrl);  
     }  
       
 }
