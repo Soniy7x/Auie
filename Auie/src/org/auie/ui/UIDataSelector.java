@@ -163,7 +163,6 @@ public class UIDataSelector extends PopupWindow{
 			listView3 = new ListView(context);
 			listView3.setLayoutParams(getParams(0, MATCH_PARENT, 1));
 			listView3.setPadding(dp2px(padding), dp2px(padding), dp2px(padding), dp2px(padding));
-			listView3.setVerticalScrollBarEnabled(false);
 			listView3.setSelector(new BitmapDrawable());
 			listView3.setDivider(context.getResources().getDrawable(android.R.color.transparent));
 			listView3.setOnItemClickListener(itemClickListener);
@@ -177,7 +176,6 @@ public class UIDataSelector extends PopupWindow{
 			listView2 = new ListView(context);
 			listView2.setLayoutParams(getParams(0, MATCH_PARENT, 1));
 			listView2.setPadding(dp2px(padding), dp2px(padding), dp2px(padding), dp2px(padding));
-			listView2.setVerticalScrollBarEnabled(false);
 			listView2.setSelector(new BitmapDrawable());
 			listView2.setDivider(context.getResources().getDrawable(android.R.color.transparent));
 			listView2.setOnItemClickListener(itemClickListener);
@@ -191,7 +189,6 @@ public class UIDataSelector extends PopupWindow{
 			listView1 = new ListView(context);
 			listView1.setLayoutParams(getParams(0, MATCH_PARENT, 1));
 			listView1.setPadding(dp2px(padding), dp2px(padding), dp2px(padding), dp2px(padding));
-			listView1.setVerticalScrollBarEnabled(false);
 			listView1.setSelector(new BitmapDrawable());
 			listView1.setDivider(context.getResources().getDrawable(android.R.color.transparent));
 			listView1.setOnItemClickListener(itemClickListener);
