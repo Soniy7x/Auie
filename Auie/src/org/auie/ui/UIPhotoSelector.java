@@ -424,7 +424,7 @@ public class UIPhotoSelector extends PopupWindow {
 			mImageLoader.downloadFile(thumbPath == null ? path : thumbPath, new OnUEImageLoadListener() {
 				
 				@Override
-				public void onImageLoadComlepeted(Bitmap bitmap, String imageUrl) {
+				public void onImageLoadCompleted(Bitmap bitmap, String imageUrl) {
 					ImageView.setImageBitmap(bitmap);
 				}
 			});
@@ -446,6 +446,7 @@ public class UIPhotoSelector extends PopupWindow {
 		@SuppressLint("InflateParams")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
+			//判断GirdView状态，如果处于Measure直接返回convertView，不进行数据处理
 			if (photoGridView.isMeasure() && convertView != null) {
 				return convertView;
 			}
@@ -479,7 +480,7 @@ public class UIPhotoSelector extends PopupWindow {
 			final ImageView iv = imageView;
 			mImageLoader.downloadFile(path, new OnUEImageLoadListener() {
 				@Override
-				public void onImageLoadComlepeted(Bitmap bitmap, String imageUrl) {
+				public void onImageLoadCompleted(Bitmap bitmap, String imageUrl) {
 					iv.setImageBitmap(bitmap);
 				}
 			});
