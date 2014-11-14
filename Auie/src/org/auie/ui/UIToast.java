@@ -71,11 +71,11 @@ public class UIToast extends Toast{
 	}
 	
 	public static void show(Context context, Object text){
-		show(context, text, TYPE_FILLET);
+		show(context, text, TYPE_ANGLE);
 	}
 	
 	public static void show(Context context, Object text, int[] colors){
-		show(context, text, colors, TYPE_FILLET);
+		show(context, text, colors, TYPE_ANGLE);
 	}
 	
 	public static void show(Context context, Object text, long type){
@@ -87,11 +87,11 @@ public class UIToast extends Toast{
 	}
 	
 	public static void showTime(Context context, Object text, int duration){
-		showTime(context, text, TYPE_FILLET, duration);
+		showTime(context, text, TYPE_ANGLE, duration);
 	}
 	
 	public static void showTime(Context context, Object text, int[] colors, int duration){
-		showTime(context, text, colors, TYPE_FILLET, duration);
+		showTime(context, text, colors, TYPE_ANGLE, duration);
 	}
 	
 	public static void showTime(Context context, Object text, long type, int duration){
