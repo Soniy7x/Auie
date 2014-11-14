@@ -16,8 +16,10 @@ import java.util.regex.Pattern;
  * @author Soniy7x
  *
  */
-public final class UEString {
+public final class UEString{
 
+	private UEString(){}
+	
 	/**
 	 * SHA256加密方式(SHA256 Encryption)
 	 * @param str 需要加密的字符串(Require encrypted String)
