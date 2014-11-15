@@ -18,7 +18,7 @@ public class UERestHttpClient extends UEHttpClient{
 		sendRequest(context, getPutRequest(url, params), handler);
 	}
 	
-	public void putt(Context context, String url, UEHttpQueryParams params, UEHttpListener handler, int connectionTime, int socketTime){
+	public void put(Context context, String url, UEHttpQueryParams params, UEHttpListener handler, int connectionTime, int socketTime){
 		sendRequest(context, getPutRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
