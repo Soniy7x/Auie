@@ -74,7 +74,7 @@ public final class UEImageLoader {
     /**
      * 开启线程池(start ThreadPool)
      */
-    public static void startThreadPoolIfNecessary(){
+    private static void startThreadPoolIfNecessary(){
         if(mExecutorService == null || mExecutorService.isShutdown() || mExecutorService.isTerminated()){  
             mExecutorService = Executors.newFixedThreadPool(3);
         }
