@@ -69,7 +69,7 @@ public class UEImageManager {
 	/**
 	 * 创建图片原图集合
 	 */
-	public void createAlbums(){
+	private void createAlbums(){
 		Cursor cursor = mContentResolver.query(Media.EXTERNAL_CONTENT_URI, ALBUMS_PROJECTION, null, null, null);
 		if (cursor.moveToFirst()) {
 			int idIndex = cursor.getColumnIndex(Albums._ID);
@@ -143,6 +143,16 @@ public class UEImageManager {
 			createBuckets();
 		}
 		return tempbuckets;
+	}
+	
+	/**
+	 * 获取原图集合
+	 */
+	public List<Map<String, String>> getAlbums(boolean refresh){
+		if (refresh) {
+			createAlbums();
+		}
+		return albums;
 	}
 	
 	/**
