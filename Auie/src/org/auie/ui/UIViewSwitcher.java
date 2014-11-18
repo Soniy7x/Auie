@@ -34,6 +34,8 @@ public class UIViewSwitcher extends LinearLayout {
 	
 	private int tabPadding = 24;
 	private int tabTextSize = 12;
+	private int tabImageWidth = 32;
+	private int tabImageHeight = 32;
 	
 	private int tabTextColor = 0xDD666666;
 	private int tabTextSelectedColor = 0xFF45C01A;
@@ -128,7 +130,7 @@ public class UIViewSwitcher extends LinearLayout {
 		RelativeLayout tabContent = new RelativeLayout(getContext());
 		tabContent.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
 		
-		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(UEMethod.dp2px(getContext(), 32), UEMethod.dp2px(getContext(), 32));
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(UEMethod.dp2px(getContext(), tabImageWidth), UEMethod.dp2px(getContext(), tabImageHeight));
 		params.setMargins(0, UEMethod.dp2px(getContext(), 4), 0, 0);
 		params.addRule(RelativeLayout.CENTER_HORIZONTAL);
 		ImageView imageView = new ImageView(getContext());
@@ -264,6 +266,14 @@ public class UIViewSwitcher extends LinearLayout {
 		this.delegatePageListener = delegatePageListener;
 	}
 
+	public int getTabTextSize() {
+		return tabTextSize;
+	}
+
+	public void setTabTextSize(int tabTextSize) {
+		this.tabTextSize = tabTextSize;
+	}
+
 	public boolean isAutoNotice() {
 		return autoNotice;
 	}
@@ -339,6 +349,32 @@ public class UIViewSwitcher extends LinearLayout {
 
 	public int getSelectedPosition() {
 		return selectedPosition;
+	}
+	
+	public void setTabImageSize(int tabImageSize) {
+		this.tabImageWidth = tabImageSize;
+		this.tabImageHeight = tabImageSize;
+	}
+	
+	public void setTabImageSize(int tabImageWidth, int tabImageHeight) {
+		this.tabImageWidth = tabImageWidth;
+		this.tabImageHeight = tabImageHeight;
+	}
+
+	public int getTabImageWidth() {
+		return tabImageWidth;
+	}
+
+	public void setTabImageWidth(int tabImageWidth) {
+		this.tabImageWidth = tabImageWidth;
+	}
+
+	public int getTabImageHeight() {
+		return tabImageHeight;
+	}
+
+	public void setTabImageHeight(int tabImageHeight) {
+		this.tabImageHeight = tabImageHeight;
 	}
 	
 }
