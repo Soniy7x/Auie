@@ -67,6 +67,7 @@ public class UIListView extends ListView implements OnScrollListener{
 	
 	private Scroller scroller;
 	private HeaderView headerView;
+	private boolean measure = false;
 	private LinearLayout headerViewContent;
 	private int headerViewHeight;
 	private FooterView footerView;
@@ -365,6 +366,23 @@ public class UIListView extends ListView implements OnScrollListener{
 
 	public void setItemControl(ItemControl itemControl) {
 		this.mItemControl = itemControl;
+	}
+
+	//true说明ListView处于尺寸探测中, false说明尺寸探测完成
+	public boolean isMeasure() {
+		return measure;
+	}
+	
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		measure = true;
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+	}
+
+	@Override
+	protected void onLayout(boolean changed, int l, int t, int r, int b) {
+		measure = false;
+		super.onLayout(changed, l, t, r, b);
 	}
 	
 	@Override
