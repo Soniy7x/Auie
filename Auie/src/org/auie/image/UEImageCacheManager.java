@@ -10,12 +10,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
+import org.auie.utils.UE;
 import org.auie.utils.UEImageNotByteException;
 import org.auie.utils.UEString;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.util.LruCache;
+import android.util.Log;
 
 /**
  * 
@@ -74,6 +76,34 @@ public final class UEImageCacheManager {
     }
     
     /**
+     * 缓存Bitmap图片
+     * @param key 图片索引key值
+     * @param bitmap 将要缓存的图片
+     */
+    public void putBitmap(String key, Bitmap bitmap){
+    	if (bitmap == null) {
+    		Log.w(UE.TAG, "图片为空，无法进行缓存");
+			return;
+		}
+    	mImageCache.put(key, new SoftReference<Bitmap>(bitmap));
+    	mLruCache.put(key, bitmap);
+    	if (external) {
+    		String fileName = UEString.encryptMD5(key);  
+            String filePath = this.cachedDir + "/" +fileName;  
+            FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream(filePath);
+				bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos); 
+				if (fos != null) {
+					fos.close();
+				}
+			} catch (Exception e) {
+				Log.w(UE.TAG, "图片缓存到SD卡失败");
+			}
+		}
+    }
+    
+    /**
      * 从网络下载图片(Download Image from HTTP)
      * @param url 图片地址(Image address)
      * @param cache 是否缓存(Whether to cache)
@@ -93,7 +123,10 @@ public final class UEImageCacheManager {
                     String fileName = UEString.encryptMD5(url);  
                     String filePath = this.cachedDir + "/" +fileName;  
                     FileOutputStream fos = new FileOutputStream(filePath);  
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);  
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos); 
+                    if (fos != null) {
+    					fos.close();
+    				}
                 }  
             }
             is.close();  
@@ -122,6 +155,9 @@ public final class UEImageCacheManager {
                     String filePath = this.cachedDir + "/" +fileName;  
                     FileOutputStream fos = new FileOutputStream(filePath);  
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);  
+                    if (fos != null) {
+    					fos.close();
+    				}
                 }  
             } 
             return bitmap;  
