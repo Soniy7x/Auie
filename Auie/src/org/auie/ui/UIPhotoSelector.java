@@ -91,7 +91,7 @@ public class UIPhotoSelector extends PopupWindow {
 		this.selectorListener = listener;
 		this.COUNT_MAX = count;
 		this.DP = UEMethod.dp2px(context, 1);
-		this.mImageLoader = new UEImageLoader(context);
+		this.mImageLoader = UEImageLoader.getInstance(context);
 		if((attrs.flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == WindowManager.LayoutParams.FLAG_FULLSCREEN){
 			this.HEIGHT = manager.getDefaultDisplay().getHeight();
 		}else {
