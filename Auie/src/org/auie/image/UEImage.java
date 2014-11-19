@@ -34,11 +34,9 @@ public class UEImage {
 	public static final float TRANSFORMROUND_CIRCLE = -1;
 
 	private Bitmap bitmap = null;
-	private Drawable drawable = null;
 	
 	public UEImage(Drawable drawable){
-		this.drawable = drawable;
-		drawableToBitmap();
+		drawableToBitmap(drawable);
 	}
 	
 	public UEImage(Resources res, int resId){
@@ -46,7 +44,7 @@ public class UEImage {
 	}
 	
 	public UEImage(Bitmap bitmap){
-		this(new BitmapDrawable(bitmap));
+		this.bitmap = bitmap;
 	}
 	
 	public UEImage(String filePath) throws UEImageNotByteException{
@@ -54,7 +52,6 @@ public class UEImage {
 			throw new UEImageNotByteException("this params length is 0 or not exists, so not tansform to image.");
 		}
 		this.bitmap = BitmapFactory.decodeFile(filePath);
-		bitmapToDrawable();
 	}
 
 	public UEImage(byte[] data) throws UEImageNotByteException{
@@ -62,7 +59,6 @@ public class UEImage {
 			throw new UEImageNotByteException("this params length is 0 or not exists, so not tansform to image.");
 		}
 		this.bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-		bitmapToDrawable();
 	}
 	
 	public UEImage(String filePath, boolean resize) throws IOException, UEImageNotByteException{
@@ -91,7 +87,6 @@ public class UEImage {
 			}
 			this.bitmap = bitmap;
 		}
-		bitmapToDrawable();
 	}
 	
 	public UEImage transformRound(float radius){
@@ -113,7 +108,6 @@ public class UEImage {
 		paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
 		canvas.drawBitmap(bitmap, rect, rect, paint);
 		this.bitmap = mBitmap;
-		bitmapToDrawable();
 		return this;
 	}
 	
@@ -122,7 +116,7 @@ public class UEImage {
 	}
 	
 	public Drawable toDrawable(){
-		return drawable;
+		return bitmapToDrawable();
 	}
 	
 	public byte[] toByteArray(){
@@ -131,26 +125,27 @@ public class UEImage {
 	    return baos.toByteArray();
 	}
 	
-	private void bitmapToDrawable(){
-		this.drawable = new BitmapDrawable(this.bitmap);
+	private Drawable bitmapToDrawable(){
+		return new BitmapDrawable(this.bitmap);
 	}
 	
-	private void drawableToBitmap() {
-		final int width = this.drawable.getIntrinsicWidth();
-		final int height = this.drawable.getIntrinsicHeight();
-		Bitmap bitmap = Bitmap.createBitmap(width, height, this.drawable.getOpacity() != PixelFormat.OPAQUE ? Config.ARGB_8888 : Config.RGB_565);
+	private void drawableToBitmap(Drawable drawable) {
+		final int width = drawable.getIntrinsicWidth();
+		final int height = drawable.getIntrinsicHeight();
+		Bitmap bitmap = Bitmap.createBitmap(width, height, drawable.getOpacity() != PixelFormat.OPAQUE ? Config.ARGB_8888 : Config.RGB_565);
 		Canvas canvas = new Canvas(bitmap);
-		this.drawable.setBounds(0, 0, width, height);
-		this.drawable.draw(canvas);
+		drawable.setBounds(0, 0, width, height);
+		drawable.draw(canvas);
 		this.bitmap = bitmap;
 	}
 	
 	public UEImage addFilterToGray(){
-		this.drawable.mutate();
+		Drawable drawable = bitmapToDrawable();
+		drawable.mutate();
 		ColorMatrix matrix = new ColorMatrix();
 		matrix.setSaturation(0);
-		this.drawable.setColorFilter(new ColorMatrixColorFilter(matrix));
-		drawableToBitmap();
+		drawable.setColorFilter(new ColorMatrixColorFilter(matrix));
+		drawableToBitmap(drawable);
 		return this;
 	}
 	
@@ -159,7 +154,6 @@ public class UEImage {
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
         ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());
         bitmap = BitmapFactory.decodeStream(isBm, null, null);
-        bitmapToDrawable();
         return this;
     }
 	
@@ -174,7 +168,6 @@ public class UEImage {
         }  
         ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());
         bitmap = BitmapFactory.decodeStream(isBm, null, null);
-        bitmapToDrawable();
         return this;
     }
 	
@@ -184,7 +177,6 @@ public class UEImage {
 		Matrix matrix = new Matrix();
 		matrix.postScale(scaleWidth, scaleHeight);
 		bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-		bitmapToDrawable();
  		return this;
 	}
 	
