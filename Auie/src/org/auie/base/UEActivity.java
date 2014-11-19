@@ -44,7 +44,7 @@ public abstract class UEActivity extends Activity implements OnClickListener{
 	 * (Initialization begins)
 	 */
 	private void initializeBegin() {
-		UEAnnotationManager.getInstance().initialize(this);
+		UEAnnotationManager.getInstance().initialize(this, true);
 	}
 	
 	/**

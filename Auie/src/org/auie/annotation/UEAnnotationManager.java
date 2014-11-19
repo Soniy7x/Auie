@@ -121,8 +121,8 @@ public final class UEAnnotationManager {
 	 * 初始化方法
 	 * @param context 上下文
 	 */
-	public void initialize(Activity context){
-		if (context.getClass().isAnnotationPresent(UELayout.class)) {
+	public void initialize(Activity context, boolean layout){
+		if (layout && context.getClass().isAnnotationPresent(UELayout.class)) {
 			initializeLayout(context);
 		}
 		Field[] fields = context.getClass().getDeclaredFields();
@@ -134,6 +134,19 @@ public final class UEAnnotationManager {
 			}
 		}
 	}
+//	public void initialize(Activity context){
+//		if (context.getClass().isAnnotationPresent(UELayout.class)) {
+//			initializeLayout(context);
+//		}
+//		Field[] fields = context.getClass().getDeclaredFields();
+//		for (Field field : fields) {
+//			if (field.isAnnotationPresent(UEID.class)) {
+//				initializeWidgets(field, context);
+//			} else if (field.isAnnotationPresent(UENew.class)) {
+//				initializeObjects(field, context);
+//			}
+//		}
+//	}
 	
 	/**
 	 * 初始化方法

@@ -33,7 +33,7 @@ public abstract class UEFragmentActivity extends FragmentActivity implements OnC
 	 * 初始化开始方法
 	 */
 	private void initializeBegin() {
-		UEAnnotationManager.getInstance().initialize(this);
+		UEAnnotationManager.getInstance().initialize(this, true);
 	}
 	
 	/**
