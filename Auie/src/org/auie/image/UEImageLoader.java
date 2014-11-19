@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v4.util.LruCache;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -105,7 +106,7 @@ public final class UEImageLoader {
     }  
     
     public Bitmap downloadBitmap(String key){
-    	if(mSet.contains(key)){  
+    	if(TextUtils.isEmpty(key)){  
             Log.w(UE.TAG, "图片正在下载，不能重复下载");  
             return null;
         }
