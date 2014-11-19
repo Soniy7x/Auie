@@ -8,9 +8,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.auie.utils.UE;
+import org.auie.utils.UEImageNotByteException;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v4.util.LruCache;
 import android.util.Log;
@@ -39,7 +41,9 @@ public final class UEImageLoader {
     private static UEImageCacheManager cacheManager;  
     //线程池对象(ExecutorService)
     private static ExecutorService mExecutorService;
-    private Handler mHandler;   
+    private Handler mHandler;  
+    
+    private static UEImageLoader instance;
     
     /**
      * 静态对象初始化(Static Object initialization)
@@ -55,11 +59,31 @@ public final class UEImageLoader {
      * 构造方法(Constructor)
      * @param context 上下文
      */
-    public UEImageLoader(Context context){  
-        mHandler = new Handler();  
+    private UEImageLoader(Context context){  
+        mHandler = new Handler();
         startThreadPoolIfNecessary(); 
         setExternal(true, context.getCacheDir().getAbsolutePath());
     }  
+    
+    private UEImageLoader(Context context, boolean external){  
+        mHandler = new Handler();
+        startThreadPoolIfNecessary(); 
+        setExternal(external, context.getCacheDir().getAbsolutePath());
+    }
+    
+    public static UEImageLoader getInstance(Context context) {
+		if (instance == null) {
+			instance = new UEImageLoader(context);
+		}
+		return instance;
+	}
+    
+    public static UEImageLoader getInstance(Context context, boolean external) {
+		if (instance == null) {
+			instance = new UEImageLoader(context, external);
+		}
+		return instance;
+	}
     
     /**
      * 设置是否使用外置存储
@@ -80,13 +104,41 @@ public final class UEImageLoader {
         }
     }  
     
+    public Bitmap downloadBitmap(String key){
+    	if(mSet.contains(key)){  
+            Log.w(UE.TAG, "图片正在下载，不能重复下载");  
+            return null;
+        }
+    	Bitmap bitmap = cacheManager.getBitmapFromMemory(key);  
+        if(bitmap != null){  
+            return bitmap;
+        }
+        return null;
+    }
+    
+    public void putBitmap(String key, Bitmap bitmap){
+    	cacheManager.putBitmap(key, bitmap);
+    }
+    
+    public void putBitmap(String key, Drawable drawable){
+    	cacheManager.putBitmap(key, new UEImage(drawable).toBitmap());
+    }
+    
+    public void putBitmap(String key, UEImage image){
+    	cacheManager.putBitmap(key, image.toBitmap());
+    }
+    
+    public void putBitmap(String key, byte[] bs) throws UEImageNotByteException{
+    	cacheManager.putBitmap(key, new UEImage(bs).toBitmap());
+    }
+    
     /**
      * 从网络下载图片并缓存(Download and Cache Image from HTTP)
      * @param url 图片地址(Image Address)
      * @param callback 回调方法(callback method)
      */
-    public void downloadImage(final String url, final OnUEImageLoadListener callback){  
-        downloadImage(url, true, callback);  
+    public void downloadHTTP(final String url, final OnUEImageLoadListener callback){  
+    	downloadHTTP(url, true, callback);  
     } 
     
     /**
@@ -95,7 +147,7 @@ public final class UEImageLoader {
      * @param cache 是否缓存(Whether to cache)
      * @param callback 回调方法(callback method)
      */
-    public void downloadImage(final String url, final boolean cache, final OnUEImageLoadListener callback){  
+    public void downloadHTTP(final String url, final boolean cache, final OnUEImageLoadListener callback){  
         if(mSet.contains(url)){  
             Log.w(UE.TAG, "图片正在下载，不能重复下载");  
             return;
