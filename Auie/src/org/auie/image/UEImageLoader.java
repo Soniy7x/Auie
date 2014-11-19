@@ -107,7 +107,7 @@ public final class UEImageLoader {
     
     public Bitmap downloadBitmap(String key){
     	if(TextUtils.isEmpty(key)){  
-            Log.w(UE.TAG, "图片正在下载，不能重复下载");  
+            Log.w(UE.TAG, "图片键值不得为空");  
             return null;
         }
     	Bitmap bitmap = cacheManager.getBitmapFromMemory(key);  
