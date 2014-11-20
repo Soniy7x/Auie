@@ -4,8 +4,10 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -28,20 +30,62 @@ public class UEHttpClient {
 
 	private DefaultHttpClient httpClient = null;
 	
-	public void get(Context context, String url, UEHttpQueryParams params, UEHttpListener listener){
+	public void get(Context context, String url, UEHttpParams params, UEHttpListener listener){
 		sendRequest(context, getGetRequest(url, params), listener);
 	}
 	
-	public void get(Context context, String url, UEHttpQueryParams params, UEHttpListener handler, int connectionTime, int socketTime){
+	public void get(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
 		sendRequest(context, getGetRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
-	public void post(Context context, String url, UEHttpQueryParams params, UEHttpListener handler){
+	public void post(Context context, String url, UEHttpParams params, UEHttpListener handler){
 		sendRequest(context, getPostRequest(url, params), handler);
 	}
 	
-	public void post(Context context, String url, UEHttpQueryParams params, UEHttpListener handler, int connectionTime, int socketTime){
+	public void post(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
 		sendRequest(context, getPostRequest(url, params), handler, connectionTime, socketTime);
+	}
+	
+	public void put(Context context, String url, UEHttpParams params, UEHttpListener handler){
+		sendRequest(context, getPutRequest(url, params), handler);
+	}
+	
+	public void put(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
+		sendRequest(context, getPutRequest(url, params), handler, connectionTime, socketTime);
+	}
+	
+	public void delete(Context context, String url, UEHttpParams params, UEHttpListener listener){
+		sendRequest(context, getDeleteRequest(url, params), listener);
+	}
+	
+	public void delete(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
+		sendRequest(context, getDeleteRequest(url, params), handler, connectionTime, socketTime);
+	}
+	
+	private HttpPut getPutRequest(String url, UEHttpParams params){
+		if(params == null){
+			return new HttpPut(url);
+		}
+		HttpPut put = null;
+		if(url.length() > 0){
+			put = new HttpPut(url);
+			try {
+				put.setEntity(new UrlEncodedFormEntity(params.getParams(), "utf-8"));
+			} catch (UnsupportedEncodingException e) {
+				Log.d(UE.TAG, e.toString());
+			}
+		}
+		return put;
+	}
+	
+	private HttpDelete getDeleteRequest(String url, UEHttpParams params){
+		HttpDelete delete = null;
+		if(params == null){
+			delete = new HttpDelete(url);
+		}else{	
+			delete = new HttpDelete(url+"?"+URLEncodedUtils.format(params.getParams(), "UTF-8"));
+		}
+		return delete;
 	}
 	
 	protected void sendRequest(Context context, HttpRequest params, UEHttpListener handler){
@@ -54,7 +98,7 @@ public class UEHttpClient {
 		task.execute();
 	}
 	
-	private HttpGet getGetRequest(String url, UEHttpQueryParams params){
+	private HttpGet getGetRequest(String url, UEHttpParams params){
 		HttpGet get = null;
 		if(params == null){
 			get = new HttpGet(url);
@@ -64,7 +108,7 @@ public class UEHttpClient {
 		return get;
 	}
 	
-	private HttpPost getPostRequest(String url, UEHttpQueryParams params){
+	private HttpPost getPostRequest(String url, UEHttpParams params){
 		if(params == null){
 			return new HttpPost(url);
 		}
