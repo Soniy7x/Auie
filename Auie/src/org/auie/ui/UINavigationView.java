@@ -3,6 +3,7 @@ package org.auie.ui;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import org.auie.utils.UEDevice;
 import org.auie.utils.UEMethod;
 
 import android.annotation.TargetApi;
@@ -145,7 +146,8 @@ public class UINavigationView extends LinearLayout {
 		
 		mActionBar = new RelativeLayout(getContext());
 		mActionBar.setBackgroundColor(navigationBarBackgroundColor);
-		mActionBar.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 48 * DP));
+		mActionBar.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 
+				UEDevice.getDeviceScreen(getContext()) < UEDevice.SCREEN_720P ? 38 * DP : 48 * DP));
 		
 		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, 24 * DP);
 		params2.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
