@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.auie.utils.UEException.UEJSONTranslateException;
+
 public class UEJSONTranslator {
 
 	public static String translateListToJsonForKey(List<?> list, String key) throws UEJSONTranslateException{

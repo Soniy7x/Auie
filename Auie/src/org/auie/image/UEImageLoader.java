@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.auie.utils.UE;
-import org.auie.utils.UEImageNotByteException;
+import org.auie.utils.UEException.UEImageNotByteException;
 
 import android.content.Context;
 import android.graphics.Bitmap;

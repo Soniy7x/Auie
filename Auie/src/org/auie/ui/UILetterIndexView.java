@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.auie.ui.UIIndexBar.OnUIIndexItemOnTouchListener;
-import org.auie.utils.UEIndexNotFoundException;
+import org.auie.utils.UEException.UEIndexNotFoundException;
 import org.auie.utils.UEMethod;
 import org.auie.utils.UEPinyin;
 

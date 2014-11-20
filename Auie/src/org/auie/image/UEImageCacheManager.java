@@ -11,7 +11,7 @@ import java.net.URL;
 import java.util.Map;
 
 import org.auie.utils.UE;
-import org.auie.utils.UEImageNotByteException;
+import org.auie.utils.UEException.UEImageNotByteException;
 import org.auie.utils.UEString;
 
 import android.graphics.Bitmap;

@@ -5,10 +5,43 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 
 public final class UEDevice {
 
+	public static final int SCREEN_240P = 240;
+	public static final int SCREEN_360P = 360;
+	public static final int SCREEN_480P = 480;
+	public static final int SCREEN_720P = 720;
+	public static final int SCREEN_1080P = 1080;
+	public static final int SCREEN_1280P = 1280;
+	
 	private UEDevice(){}
+	
+	/**
+	 * 获取屏幕分辨率
+	 */
+	public static int getDeviceScreen(Context context){
+		DisplayMetrics dm = null;
+		dm = context.getResources().getDisplayMetrics();
+		if (dm == null) {
+			return -1;
+		}
+		int screenWidth = dm.widthPixels;
+		if (screenWidth <= SCREEN_240P) {
+			return SCREEN_240P;
+		}else if (screenWidth > SCREEN_240P && screenWidth <= SCREEN_360P) {
+			return SCREEN_360P;
+		}else if (screenWidth > SCREEN_360P && screenWidth <= SCREEN_480P) {
+			return SCREEN_480P;
+		}else if (screenWidth > SCREEN_480P && screenWidth <= SCREEN_720P) {
+			return SCREEN_720P;
+		}else if (screenWidth > SCREEN_720P && screenWidth <= SCREEN_1080P) {
+			return SCREEN_1080P;
+		}else {
+			return SCREEN_1280P;
+		}
+	}
 	
 	/**
 	 * 获取网络类型

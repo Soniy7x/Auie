@@ -11,7 +11,7 @@ import org.auie.image.UEImageManager;
 import org.auie.image.UEImageManager.Bucket;
 import org.auie.image.UEImageManager.Image;
 import org.auie.utils.UEAdapter;
-import org.auie.utils.UEImageNotByteException;
+import org.auie.utils.UEException.UEImageNotByteException;
 import org.auie.utils.UEMethod;
 
 import android.annotation.SuppressLint;
