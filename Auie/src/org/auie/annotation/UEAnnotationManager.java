@@ -245,7 +245,7 @@ public final class UEAnnotationManager {
 				clazz.getMethod("setText", String.class).invoke(view, field.getAnnotation(UEText.class).value());
 			}
 			if (field.isAnnotationPresent(UETextSize.class)) {
-				clazz.getMethod("setTextSize", int.class).invoke(view, field.getAnnotation(UETextSize.class).value());
+				clazz.getMethod("setTextSize", float.class).invoke(view, field.getAnnotation(UETextSize.class).value());
 			}
 			if (field.isAnnotationPresent(UETextColor.class)) {
 				clazz.getMethod("setTextColor", int.class).invoke(view, Color.parseColor(field.getAnnotation(UETextColor.class).value()));
