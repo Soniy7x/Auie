@@ -117,20 +117,30 @@ public final class UEImageLoader {
         return null;
     }
     
-    public void putBitmap(String key, Bitmap bitmap){
-    	cacheManager.putBitmap(key, bitmap);
+    public void putBitmap(final String key, final Bitmap bitmap){
+        mExecutorService.submit(new Runnable(){  
+            @Override  
+            public void run() {  
+                mHandler.post(new Runnable(){  
+                    @Override  
+                    public void run(){  
+                        cacheManager.putBitmap(key, bitmap); 
+                    }  
+                });  
+            }  
+        });
     }
     
     public void putBitmap(String key, Drawable drawable){
-    	cacheManager.putBitmap(key, new UEImage(drawable).toBitmap());
+    	putBitmap(key, new UEImage(drawable).toBitmap());
     }
     
     public void putBitmap(String key, UEImage image){
-    	cacheManager.putBitmap(key, image.toBitmap());
+    	putBitmap(key, image.toBitmap());
     }
     
     public void putBitmap(String key, byte[] bs) throws UEImageNotByteException{
-    	cacheManager.putBitmap(key, new UEImage(bs).toBitmap());
+    	putBitmap(key, new UEImage(bs).toBitmap());
     }
     
     /**
