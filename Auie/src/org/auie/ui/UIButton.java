@@ -42,7 +42,7 @@ public class UIButton extends RelativeLayout implements OnTouchListener{
 	private int textColor = Color.parseColor("#F8F8F8");
 	private int strokeColor = Color.parseColor("#D8D8D8");
 	
-	private int textSize = 14;
+	private float textSize = 14;
 	private String text = "";
 	
 	public UIButton(Context context) {
@@ -167,14 +167,15 @@ public class UIButton extends RelativeLayout implements OnTouchListener{
 		imageView.setVisibility(VISIBLE);
 	}
 	
-	public int getTextSize() {
+	public float getTextSize() {
 		return textSize;
 	}
 
-	public void setTextSize(int textSize) {
+	public void setTextSize(float textSize) {
 		this.textSize = textSize;
-		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(textSize / 2 * 5, textSize / 2 * 5);
-		params.setMargins(0, 0, textSize / 2, 0);
+		int size = (int) textSize;
+		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size / 2 * 5, size / 2 * 5);
+		params.setMargins(0, 0, size / 2, 0);
 		textView.setTextSize(textSize);
 		imageView.setLayoutParams(params);
 	}
