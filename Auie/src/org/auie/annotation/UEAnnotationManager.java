@@ -134,19 +134,6 @@ public final class UEAnnotationManager {
 			}
 		}
 	}
-//	public void initialize(Activity context){
-//		if (context.getClass().isAnnotationPresent(UELayout.class)) {
-//			initializeLayout(context);
-//		}
-//		Field[] fields = context.getClass().getDeclaredFields();
-//		for (Field field : fields) {
-//			if (field.isAnnotationPresent(UEID.class)) {
-//				initializeWidgets(field, context);
-//			} else if (field.isAnnotationPresent(UENew.class)) {
-//				initializeObjects(field, context);
-//			}
-//		}
-//	}
 	
 	/**
 	 * 初始化方法
@@ -251,7 +238,6 @@ public final class UEAnnotationManager {
 				clazz.getMethod("setTextColor", int.class).invoke(view, Color.parseColor(field.getAnnotation(UETextColor.class).value()));
 			}
 		}catch(Exception e){
-			System.out.println(e.toString());
 			Log.d("initializeWidgets", e.getMessage());
 		}
 	}
@@ -295,15 +281,15 @@ public final class UEAnnotationManager {
 					.invoke(view.findViewById(ID), fragment);
 				}
 				if (field.isAnnotationPresent(UETextColor.class)) {
-					field.getType().getMethod("setTextColor", Integer.class)
+					field.getType().getMethod("setTextColor", int.class)
 					.invoke(view.findViewById(ID), Color.parseColor(field.getAnnotation(UETextColor.class).value()));
 				}
 				if (field.isAnnotationPresent(UETextSize.class)) {
-					field.getType().getMethod("setTextSize", Integer.class)
+					field.getType().getMethod("setTextSize", float.class)
 					.invoke(view.findViewById(ID), field.getAnnotation(UETextSize.class).value());
 				}
 				if (field.isAnnotationPresent(UEBackgroundColor.class)) {
-					field.getType().getMethod("setBackgroundColor", Integer.class)
+					field.getType().getMethod("setBackgroundColor", int.class)
 					.invoke(view.findViewById(ID), Color.parseColor(field.getAnnotation(UEBackgroundColor.class).value()));
 				}
 			}catch(Exception e){
