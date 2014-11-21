@@ -166,6 +166,32 @@ public abstract class UENavigationFragmentActivity extends FragmentActivity impl
 		mNavigationView.setTitleColor(titleColor);
 	}
 	
+	public void showNavigationBar(){
+		showStatusBar();
+		showActionBar();
+	}
+	
+	public void hideNavigationBar(){
+		hideStatusBar();
+		hideActionBar();
+	}
+	
+	public void hideStatusBar(){
+		mNavigationView.hideStatusBar();
+	}
+	
+	public void hideActionBar(){
+		mNavigationView.hideActionBar();
+	}
+	
+	public void showStatusBar(){
+		mNavigationView.showStatusBar();
+	}
+	
+	public void showActionBar(){
+		mNavigationView.showActionBar();
+	}
+	
 	protected abstract void initializeFinish();
 	
 	private BroadcastReceiver wifiReceiver  = new BroadcastReceiver() {

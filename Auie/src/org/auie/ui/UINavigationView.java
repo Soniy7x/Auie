@@ -329,6 +329,24 @@ public class UINavigationView extends LinearLayout {
 		this.mTitleTextView.setTextColor(titleColor);
 	}
 
+	public void hideStatusBar(){
+		mStatus.setVisibility(View.GONE);
+	}
+	
+	public void hideActionBar(){
+		mActionBar.setVisibility(View.GONE);
+		mLine.setVisibility(View.GONE);
+	}
+	
+	public void showStatusBar(){
+		mStatus.setVisibility(View.VISIBLE);
+	}
+	
+	public void showActionBar(){
+		mActionBar.setVisibility(View.VISIBLE);
+		mLine.setVisibility(View.VISIBLE);
+	}
+	
 	private Handler handler = new Handler();
 	private SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 	private Runnable runnable = new Runnable() {
