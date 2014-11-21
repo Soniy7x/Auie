@@ -37,6 +37,7 @@ public class UIActionSheetDialog extends PopupWindow{
 	private List<SheetItem> sheetItemList;
 	private Display display;
 	private float scale;
+	private OnActionSheetClickListener onActionSheetClickListener;
 	
 	private int backgroundColor = Color.parseColor("#00000000");
 	private int titleColor = Color.parseColor("#8F8F8F");
@@ -163,12 +164,16 @@ public class UIActionSheetDialog extends PopupWindow{
 		return this;
 	}
 	
-	public UIActionSheetDialog addSheetItem(String strItem, ActionSheetColor color, OnSheetItemClickListener listener) {
+	public UIActionSheetDialog addSheetItem(String strItem, int color, OnSheetItemClickListener listener) {
 		if (sheetItemList == null) {
 			sheetItemList = new ArrayList<SheetItem>();
 		}
 		sheetItemList.add(new SheetItem(strItem, color, listener));
 		return this;
+	}
+	
+	public UIActionSheetDialog addSheetItem(String strItem, int color) {
+		return addSheetItem(strItem, color);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -188,7 +193,7 @@ public class UIActionSheetDialog extends PopupWindow{
 			final int index = i;
 			SheetItem sheetItem = sheetItemList.get(i - 1);
 			String itemName = sheetItem.name;
-			ActionSheetColor color = sheetItem.color;
+			int color = sheetItem.color;
 			final OnSheetItemClickListener listener = (OnSheetItemClickListener) sheetItem.itemClickListener;
 
 			TextView textView = new TextView(context);
@@ -199,18 +204,19 @@ public class UIActionSheetDialog extends PopupWindow{
 				textView.setTypeface(typeface);
 			}
 
-			if (color == null) {
-				textView.setTextColor(Color.parseColor(ActionSheetColor.BLUE.getName()));
-			} else {
-				textView.setTextColor(Color.parseColor(color.getName()));
-			}
+			textView.setTextColor(color);
 
 			textView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp2px(45)));
 
 			textView.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					listener.onClick(index);
+					if (listener != null) {
+						listener.onClick();
+					}
+					if (onActionSheetClickListener != null) {
+						onActionSheetClickListener.onClick(index);
+					}
 					dismiss();
 				}
 			});
@@ -246,35 +252,28 @@ public class UIActionSheetDialog extends PopupWindow{
 	public void setTypeface(Typeface typeface) {
 		this.typeface = typeface;
 	}
+	
+	public void setOnActionSheetClickListener(OnActionSheetClickListener onActionSheetClickListener) {
+		this.onActionSheetClickListener = onActionSheetClickListener;
+	}
 
 	public interface OnSheetItemClickListener {
+		void onClick();
+	}
+	
+	public interface OnActionSheetClickListener {
 		void onClick(int which);
 	}
 
 	public class SheetItem {
 		String name;
 		OnSheetItemClickListener itemClickListener;
-		ActionSheetColor color;
+		int color;
 
-		public SheetItem(String name, ActionSheetColor color, OnSheetItemClickListener itemClickListener) {
+		public SheetItem(String name, int color, OnSheetItemClickListener itemClickListener) {
 			this.name = name;
 			this.color = color;
 			this.itemClickListener = itemClickListener;
-		}
-	}
-
-	public enum ActionSheetColor {
-		
-		BLUE("#037BFF"), RED("#FD4A2E"), CYAN("#3DB399");
-
-		private String name;
-
-		private ActionSheetColor(String name) {
-			this.name = name;
-		}
-
-		public String getName() {
-			return name;
 		}
 	}
 }
