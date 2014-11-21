@@ -105,7 +105,7 @@ public final class UEImageLoader {
         }
     }  
     
-    public Bitmap downloadBitmap(String key){
+    public Bitmap loadBitmap(String key){
     	if(TextUtils.isEmpty(key)){  
             Log.w(UE.TAG, "图片键值不得为空");  
             return null;
@@ -152,8 +152,8 @@ public final class UEImageLoader {
      * @param url 图片地址(Image Address)
      * @param callback 回调方法(callback method)
      */
-    public void downloadHTTP(final String url, final OnUEImageLoadListener callback){  
-    	downloadHTTP(url, true, callback);  
+    public void loadBitmapByHttp(final String url, final OnUEImageLoadListener callback){  
+    	loadBitmapByHttp(url, true, callback);  
     } 
     
     /**
@@ -162,7 +162,7 @@ public final class UEImageLoader {
      * @param cache 是否缓存(Whether to cache)
      * @param callback 回调方法(callback method)
      */
-    public void downloadHTTP(final String url, final boolean cache, final OnUEImageLoadListener callback){  
+    public void loadBitmapByHttp(final String url, final boolean cache, final OnUEImageLoadListener callback){  
         if(mSet.contains(url)){  
             Log.w(UE.TAG, "图片正在下载，不能重复下载");  
             return;
@@ -197,8 +197,8 @@ public final class UEImageLoader {
      * @param url 图片地址(Image Address)
      * @param callback 回调方法(callback method)
      */
-    public void downloadFile(final String url, final OnUEImageLoadListener callback){  
-    	downloadFile(url, true, callback);  
+    public void loadBitmapByFile(final String url, final OnUEImageLoadListener callback){  
+    	loadBitmapByFile(url, true, callback);  
     } 
     
     /**
@@ -207,7 +207,7 @@ public final class UEImageLoader {
      * @param cache 是否缓存(Whether to cache)
      * @param callback 回调方法(callback method)
      */
-    public void downloadFile(final String url, final boolean cache, final OnUEImageLoadListener callback){
+    public void loadBitmapByFile(final String url, final boolean cache, final OnUEImageLoadListener callback){
     	if(mSet.contains(url)){  
             Log.w(UE.TAG, url + "图片正在读取，不能重复读取");  
             return;

@@ -421,7 +421,7 @@ public class UIPhotoSelector extends PopupWindow {
 				return convertView;
 			}
 			final ImageView ImageView = holder.icon;
-			mImageLoader.downloadFile(thumbPath == null ? path : thumbPath, new OnUEImageLoadListener() {
+			mImageLoader.loadBitmapByFile(thumbPath == null ? path : thumbPath, new OnUEImageLoadListener() {
 				
 				@Override
 				public void onImageLoadCompleted(Bitmap bitmap, String imageUrl) {
@@ -478,7 +478,7 @@ public class UIPhotoSelector extends PopupWindow {
 				return convertView;
 			}
 			final ImageView iv = imageView;
-			mImageLoader.downloadFile(path, new OnUEImageLoadListener() {
+			mImageLoader.loadBitmapByFile(path, new OnUEImageLoadListener() {
 				@Override
 				public void onImageLoadCompleted(Bitmap bitmap, String imageUrl) {
 					iv.setImageBitmap(bitmap);

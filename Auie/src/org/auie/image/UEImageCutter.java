@@ -138,11 +138,11 @@ public final class UEImageCutter {
     }
     
     public void putImageByFile(String filepath){
-    	mImageLoader.downloadFile(filepath, mLoadListener);
+    	mImageLoader.loadBitmapByFile(filepath, mLoadListener);
     }
     
     public void putImageByHTTP(String url){
-    	mImageLoader.downloadHTTP(url, mLoadListener);
+    	mImageLoader.loadBitmapByHttp(url, mLoadListener);
     }
     
 }
