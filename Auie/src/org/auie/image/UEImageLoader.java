@@ -117,30 +117,34 @@ public final class UEImageLoader {
         return null;
     }
     
-    public void putBitmap(final String key, final Bitmap bitmap){
-        mExecutorService.submit(new Runnable(){  
-            @Override  
-            public void run() {  
-                mHandler.post(new Runnable(){  
-                    @Override  
-                    public void run(){  
-                        cacheManager.putBitmap(key, bitmap); 
-                    }  
-                });  
-            }  
-        });
+    public void putBitmap(final String key, final Bitmap bitmap, boolean service){
+    	if (!service) {
+    		cacheManager.putBitmap(key, bitmap); 
+		}else {
+			mExecutorService.submit(new Runnable(){  
+	            @Override  
+	            public void run() {  
+	                mHandler.post(new Runnable(){  
+	                    @Override  
+	                    public void run(){  
+	                        cacheManager.putBitmap(key, bitmap); 
+	                    }  
+	                });  
+	            }  
+	        });
+		}
     }
     
-    public void putBitmap(String key, Drawable drawable){
-    	putBitmap(key, new UEImage(drawable).toBitmap());
+    public void putBitmap(String key, Drawable drawable, boolean service){
+    	putBitmap(key, new UEImage(drawable).toBitmap(), service);
     }
     
-    public void putBitmap(String key, UEImage image){
-    	putBitmap(key, image.toBitmap());
+    public void putBitmap(String key, UEImage image, boolean service){
+    	putBitmap(key, image.toBitmap(), service);
     }
     
-    public void putBitmap(String key, byte[] bs) throws UEImageNotByteException{
-    	putBitmap(key, new UEImage(bs).toBitmap());
+    public void putBitmap(String key, byte[] bs, boolean service) throws UEImageNotByteException{
+    	putBitmap(key, new UEImage(bs).toBitmap(), service);
     }
     
     /**
