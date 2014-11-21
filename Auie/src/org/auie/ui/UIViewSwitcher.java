@@ -30,7 +30,7 @@ public class UIViewSwitcher extends LinearLayout {
 	private int selectedPosition = 0;
 
 	private boolean autoNotice = true;
-	private boolean autoAnimate = true;
+	private boolean autoAnimate = false;
 	
 	private int tabPadding = 24;
 	private int tabTextSize = 12;
