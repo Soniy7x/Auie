@@ -108,14 +108,14 @@ public final class UEDevice {
 	/**
 	 * 获取系统版本名
 	 */
-	public static String getOSVerisonName(){
+	public static String getOSVersionName(){
 		return android.os.Build.VERSION.RELEASE;
 	}
 	
 	/**
 	 * 获取系统版本号
 	 */
-	public static int getOSVerisonCode(){
+	public static int getOSVersionCode(){
 		return android.os.Build.VERSION.SDK_INT;
 	}
 }
