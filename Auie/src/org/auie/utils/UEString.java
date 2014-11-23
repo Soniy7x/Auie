@@ -31,7 +31,7 @@ public final class UEString{
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
 			md.update(str.getBytes());
-			ps = transfromHex(md.digest());
+			ps = transformHex(md.digest());
 		} catch (NoSuchAlgorithmException e) {
 			return e.toString();
 		}
@@ -72,7 +72,7 @@ public final class UEString{
 	 * @param bts 需要转化的字节数组(An array of bytes needed transformation)
 	 * @return String 转化后的字符串(Converted String)
 	 */
-	public static String transfromHex(byte[] bts) {
+	public static String transformHex(byte[] bts) {
 		String des = "";
 		String tmp = null;
 		for (int i = 0; i < bts.length; i++) {
@@ -103,7 +103,7 @@ public final class UEString{
 	}
 	
 	public static boolean isChinaIDCardCode(String str){
-		if (str == null || str.trim().length() != 18 || !isNumer(str.substring(0, 17))) {
+		if (str == null || str.trim().length() != 18 || !isNumber(str.substring(0, 17))) {
 			return false;
 		}
 		if (!isDateOfBirth(str.substring(6, 14))) {
@@ -180,7 +180,7 @@ public final class UEString{
 	}
 	
 	public static boolean isDateOfBirth(String date){
-		if (date == null || date.trim().length() != 8 || !isNumer(date)) {
+		if (date == null || date.trim().length() != 8 || !isNumber(date)) {
 			return false;
 		}
 		date = date.trim();
@@ -217,7 +217,7 @@ public final class UEString{
 	 * @param str 待验证的字符串(Require Verification String)
 	 * @return boolean true/false yes/no
 	 */
-	public static boolean isNumer(String str) {
+	public static boolean isNumber(String str) {
 		Pattern pattern = Pattern.compile("[0-9]*");
 		return pattern.matcher(str).matches();
 	}
