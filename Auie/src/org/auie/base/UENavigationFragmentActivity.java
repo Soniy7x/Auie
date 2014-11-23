@@ -293,5 +293,17 @@ public abstract class UENavigationFragmentActivity extends FragmentActivity impl
 		unregisterReceiver(wifiReceiver);
 	}
 	
+	/**
+	 * 无传递参数简单跳转Activity方法
+	 * (Form this Activity to other Activity, it's not incidental parameters)
+	 * @param clazz 将要跳转的目的地(Other Activity - Destination)
+	 * @param isClose 完成后是否关闭此类(Whether to close the current Activity)
+	 */
+	public void startActivity(Class<?> clazz, boolean isClose){
+		startActivity(new Intent(this, clazz));
+		if (isClose) {
+			finish();
+		}
+	}
 	
 }
