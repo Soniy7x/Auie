@@ -192,6 +192,18 @@ public abstract class UENavigationFragmentActivity extends FragmentActivity impl
 		mNavigationView.showActionBar();
 	}
 	
+	public void addNotice(String content){
+		mNavigationView.addNotice(content);
+	}
+	
+	public void addNotice(String content, long time){
+		mNavigationView.addNotice(content, time);
+	}
+
+	public void clearNotice(){
+		mNavigationView.clearNotice();
+	}
+	
 	protected abstract void initializeFinish();
 	
 	private BroadcastReceiver wifiReceiver  = new BroadcastReceiver() {

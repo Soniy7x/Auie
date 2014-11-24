@@ -23,9 +23,9 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -189,6 +189,18 @@ public abstract class UENavigationActivity extends Activity implements OnClickLi
 	
 	public void showActionBar(){
 		mNavigationView.showActionBar();
+	}
+	
+	public void addNotice(String content){
+		mNavigationView.addNotice(content);
+	}
+	
+	public void addNotice(String content, long time){
+		mNavigationView.addNotice(content, time);
+	}
+
+	public void clearNotice(){
+		mNavigationView.clearNotice();
 	}
 	
 	protected abstract void initializeFinish();

@@ -2,6 +2,8 @@ package org.auie.ui;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.auie.utils.UEDevice;
 import org.auie.utils.UEMethod;
@@ -12,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -22,6 +25,10 @@ import android.widget.TextView;
 
 @TargetApi(Build.VERSION_CODES.L)
 public class UINavigationView extends LinearLayout {
+	
+	public static final int NOTICE_SHOW_SHORT = 1200;
+	public static final int NOTICE_SHOW_LONG = 3600;
+	public static final int NOTICE_SHOW_ALWAYS = 0;
 	
 	public static final int STATUSBAR_LIGHT = Color.parseColor("#CCFFFFFF");
 	public static final int STATUSBAR_DARK = Color.parseColor("#CC222222");
@@ -36,6 +43,7 @@ public class UINavigationView extends LinearLayout {
 	private TextView mBatteryTextView;
 	private TextView mSingalTextView;
 	private TextView mNetworkTextView;
+	private TextView mNoticeTextView;
 	private ImageView mLeftImageView;
 	private ImageView mRightImageView;
 	private UIBatteryView mBatteryView;
@@ -49,6 +57,15 @@ public class UINavigationView extends LinearLayout {
 	private int navigationTextColor = Color.parseColor("#007aff");
 	private int titleColor = Color.parseColor("#CC222222");
 	private int statusType = STATUSBAR_DARK;
+	
+	private Timer timer = new Timer();
+	private Handler noticeHandler = new Handler();
+	private Runnable noticeRunnable = new Runnable() {
+		@Override
+		public void run() {
+			clearNotice();
+		}
+	};
 	
 	private int DP = UEMethod.dp2px(getContext(), 1);
 	
@@ -121,6 +138,16 @@ public class UINavigationView extends LinearLayout {
 		mSingalTextView.setId(1995);
 		mSingalTextView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
 		
+		RelativeLayout.LayoutParams params15 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		params15.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+		params15.setMargins(4 * DP, 0, 0, 0);
+		mNoticeTextView = new TextView(getContext());
+		mNoticeTextView.setLayoutParams(params15);
+		mNoticeTextView.setTextSize(12);
+		mNoticeTextView.setVisibility(GONE);
+		mNoticeTextView.setAlpha(0.8f);
+		mNoticeTextView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+		
 		RelativeLayout.LayoutParams params9 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		params9.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
 		params9.addRule(RelativeLayout.RIGHT_OF, 1995);
@@ -138,6 +165,7 @@ public class UINavigationView extends LinearLayout {
 		
 		mStatus.addView(mSingalView);
 		mStatus.addView(mSingalTextView);
+		mStatus.addView(mNoticeTextView);
 		mStatus.addView(mNetworkTextView);
 		mStatus.addView(mWIFIView);
 		mStatus.addView(mTimeTextView);
@@ -314,14 +342,47 @@ public class UINavigationView extends LinearLayout {
 		this.mNetworkTextView.setTextColor(statusType);
 		this.mTimeTextView.setTextColor(statusType);
 		this.mBatteryTextView.setTextColor(statusType);
+		this.mNoticeTextView.setTextColor(statusType);
 		this.mSingalView.setPaintColor(statusType);
 		this.mWIFIView.setPaintColor(statusType);
 		this.mBatteryView.setPaintColor(statusType);
 	}
+	
+	public void addNotice(String content){
+		addNotice(content, NOTICE_SHOW_SHORT);
+	}
+	
+	public void addNotice(String content, long time){
+		if (!TextUtils.isEmpty(mNoticeTextView.getText())) {
+			timer.cancel();
+		}
+		mNoticeTextView.setText(content);
+		mNoticeTextView.setVisibility(VISIBLE);
+		mSingalTextView.setVisibility(GONE);
+		mSingalView.setVisibility(GONE);
+		mWIFIView.setVisibility(GONE);
+		if (time > NOTICE_SHOW_ALWAYS) {
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					noticeHandler.post(noticeRunnable);
+				}
+			}, time);
+		}
+	}
 
+	public void clearNotice(){
+		mNoticeTextView.setText("");
+		mNoticeTextView.setVisibility(GONE);
+		mSingalTextView.setVisibility(VISIBLE);
+		mWIFIView.setStatus(mWIFIView.getStatus());
+		mSingalView.setStatus(mSingalView.getStatus());
+	}
+	
 	public void setNavigationTextColor(int navigationTextColor) {
 		this.navigationTextColor = navigationTextColor;
 		this.mLeftTextView.setTextColor(navigationTextColor);
+		this.mRightTextView.setTextColor(navigationTextColor);
 	}
 
 	public void setTitleColor(int titleColor) {
