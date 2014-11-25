@@ -21,41 +21,39 @@ import android.util.Log;
 
 /**
  * 
- * 图片缓存类(Image Cache Class)
+ * 图片缓存类
  * 
  * 图片缓存管理，提供双缓存(软缓存与硬缓存)+外置存储，支持缓存本地文件URL与互联网URL
- * (Image cache manager, offer Double Cache(SoftReference + LruCache) and External Storage,
- * support to cache local file and HTTP file)
  * 
  * @author Soniy7x
  *
  */
 public final class UEImageCacheManager {
 	
-	//软缓存(SoftReference)
+	//软缓存
     private Map<String, SoftReference<Bitmap>> mImageCache; 
-    //硬缓存(LruCache)
+    //硬缓存
     private LruCache<String, Bitmap> mLruCache;
-    //是否使用外置存储(Whether to use external storage)
+    //是否使用外置存储
     private boolean external = false;  
-    //外置存储文件夹(External storage folder)
+    //外置存储文件夹
     private String cachedDir;
       
     /**
-     * 初始化方法(Constructor)
-     * @param imageCache 软缓存(SoftReference)
-     * @param mLruCache 硬缓存(LruCache)
+     * 构造方法
+     * @param imageCache 软缓存
+     * @param mLruCache 硬缓存
      */
     public UEImageCacheManager(Map<String, SoftReference<Bitmap>> imageCache, LruCache<String, Bitmap> mLruCache){  
         this(imageCache, mLruCache, false, null);
     }  
     
     /**
-     * 初始化方法(Constructor)
-     * @param imageCache 软缓存(SoftReference)
-     * @param mLruCache 硬缓存(LruCache)
-     * @param external 是否使用外置存储(Whether to use external storage)
-     * @param cachedDir 外置存储文件夹(External storage folder)
+     * 构造方法
+     * @param imageCache 软缓存
+     * @param mLruCache 硬缓存
+     * @param external 是否使用外置存储
+     * @param cachedDir 外置存储文件夹
      */
     public UEImageCacheManager(Map<String, SoftReference<Bitmap>> imageCache, LruCache<String, Bitmap> mLruCache, boolean external, String cachedDir){  
         this.mImageCache = imageCache;  
@@ -66,9 +64,8 @@ public final class UEImageCacheManager {
     
     /**
      * 设置是否使用外置存储
-     * (Set whether to use external storage, if external is true that cacheDir shouldn't null)
-     * @param external 是否使用外置存储(Whether to use external storage)
-     * @param cacheDir 外置存储文件夹(External storage folder)
+     * @param external 是否使用外置存储
+     * @param cacheDir 外置存储文件夹
      */
     public void setExternal(boolean external, String cacheDir){
     	this.external = external;
@@ -104,9 +101,9 @@ public final class UEImageCacheManager {
     }
     
     /**
-     * 从网络下载图片(Download Image from HTTP)
-     * @param url 图片地址(Image address)
-     * @param cache 是否缓存(Whether to cache)
+     * 从网络下载图片
+     * @param url 图片地址
+     * @param cache 是否缓存
      * @return Bitmap
      */
     public Bitmap getBitmapFromHttp(String url, boolean cache){  
@@ -138,9 +135,9 @@ public final class UEImageCacheManager {
     }
     
     /**
-     * 从本地文件下载图片(Download Image from Local File)
-     * @param path 图片地址(Image address)
-     * @param cache 是否缓存(Whether to cache)
+     * 从本地文件下载图片
+     * @param path 图片地址
+     * @param cache 是否缓存
      * @return Bitmap
      */
     public Bitmap getBitmapFromFile(String path, boolean cache){  
@@ -169,8 +166,8 @@ public final class UEImageCacheManager {
     }
     
     /**
-     * 从缓存中获取图片(Get Image From Cache(Memory + External storage))
-     * @param url 图片地址(Image address)
+     * 从缓存中获取图片
+     * @param url 图片地址
      * @return Bitmap
      */
     public Bitmap getBitmapFromMemory(String url){  
@@ -197,8 +194,8 @@ public final class UEImageCacheManager {
     }  
     
     /**
-     * 从外置存储中获取图片(Get Image From External storage)
-     * @param url 图片地址(Image address)
+     * 从外置存储中获取图片
+     * @param url 图片地址
      * @return Bitmap
      */
     private Bitmap getBitmapFromExternal(String url){  
@@ -211,7 +208,6 @@ public final class UEImageCacheManager {
             FileInputStream fis = new FileInputStream(filePath);  
             bitmap = BitmapFactory.decodeStream(fis);  
         } catch (FileNotFoundException e) {  
-            e.printStackTrace();  
             bitmap = null;  
         }  
         return bitmap;  
