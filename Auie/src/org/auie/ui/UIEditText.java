@@ -46,7 +46,6 @@ public class UIEditText extends EditText {
 	private int strokeColor = DEFAULT_STROKECOLOR;
 	private int clearColor = DEFAULT_CLEARCOLOR;
 	private int clearCenterColor = DEFAULT_CLEARCENTERCOLOR;
-//	private int widthMode = -2;
 	private int heightMode = -2;
 	
 	private TextWatcher mTextWatcher;
@@ -78,7 +77,6 @@ public class UIEditText extends EditText {
 				setStrokeColor(((ColorDrawable)getBackground()).getColor());
 				super.setBackgroundColor(Color.TRANSPARENT);
 			} catch (Exception e) {
-//				super.setBackgroundColor(Color.TRANSPARENT);
 			}
 		}
 		super.addTextChangedListener(mTextChangedListener);
@@ -177,7 +175,7 @@ public class UIEditText extends EditText {
 		}
 	};
 	
-	@Override
+	@Override //widthMeasureSpec = 1073742464
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		if (heightMeasureSpec < 0) {
 			heightMode = -2;
@@ -186,13 +184,6 @@ public class UIEditText extends EditText {
 		}else {
 			heightMode = 1;
 		}
-//		if (widthMeasureSpec < 0) {
-//			widthMode = -2;
-//		}else if (widthMeasureSpec == 1073742464) {
-//			widthMode = -1;
-//		}else {
-//			widthMode = 1;
-//		}
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 	}
 
