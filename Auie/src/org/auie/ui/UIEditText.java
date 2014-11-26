@@ -1,5 +1,6 @@
 package org.auie.ui;
 
+import org.auie.utils.UEDevice;
 import org.auie.utils.UEHtmlColor;
 import org.auie.utils.UEMethod;
 
@@ -10,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -30,11 +32,12 @@ public class UIEditText extends EditText {
 	public static final int TYPE_CIRCLE = 4;
 	
 	private static final int DEFAULT_STROKECOLOR = Color.parseColor("#009EFC");
-	private static final int DEFAULT_CLEARCOLOR = UEHtmlColor.GRAY;
+	private static final int DEFAULT_CLEARCOLOR = Color.parseColor("#CC808080");
 	private static final int DEFAULT_CLEARCENTERCOLOR = UEHtmlColor.WHITE;
 	
 	private Paint mPaint = new Paint();
 	private boolean mClear = false;
+	private boolean mFocus = false;
 	private boolean openClear = true;
 	private float clearX = 999;
 	private float DP = 0;
@@ -42,6 +45,9 @@ public class UIEditText extends EditText {
 	private float centerY =  0;
 	private float over = 0;
 	private float radius = 0;
+	private int scrollX = 0;
+	private int realX = 0;
+	private int realY = 0;
 	private int type = TYPE_LINE;
 	private int strokeColor = DEFAULT_STROKECOLOR;
 	private int clearColor = DEFAULT_CLEARCOLOR;
@@ -73,19 +79,27 @@ public class UIEditText extends EditText {
 	private void initDatas(){
 		DP = UEMethod.dp2pxReturnFloat(getContext(), 1);
 		if (getBackground() != null) {
-			try {
-				setStrokeColor(((ColorDrawable)getBackground()).getColor());
+			if (UEDevice.getOSVersionCode() >= 11) {
+				try {
+					setStrokeColor(((ColorDrawable)getBackground()).getColor());
+					super.setBackgroundColor(Color.TRANSPARENT);
+				} catch (Exception e) {
+					super.setBackgroundColor(Color.TRANSPARENT);
+				}
+			}else {
 				super.setBackgroundColor(Color.TRANSPARENT);
-			} catch (Exception e) {
 			}
 		}
+		super.setPadding(getPaddingLeft() + 10 * (int)DP, getPaddingTop(), (getPaddingRight() + 10 * (int)DP) * 2 + 16 * (int)DP, getPaddingBottom());
 		super.addTextChangedListener(mTextChangedListener);
 		super.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
 			
 			@Override
 			public boolean onPreDraw() {
 				if (heightMode < 0) {					
-					setPadding(14 * (int)DP, 14 * (int)DP, 14 * (int)DP, 14 * (int)DP);
+					setPadding(getPaddingLeft(), 10 * (int)DP, getPaddingRight(), 10 * (int)DP);
+				}else {
+					setPadding(getPaddingLeft(), getPaddingTop() + 7 * (int)DP, getPaddingRight(), getPaddingBottom() + 7 * (int)DP);
 				}
 				getViewTreeObserver().removeOnPreDrawListener(this);
 				return false;
@@ -197,6 +211,12 @@ public class UIEditText extends EditText {
 		return super.onTouchEvent(event);
 	}
 
+	@Override
+	protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
+		this.mFocus = focused;
+		super.onFocusChanged(focused, direction, previouslyFocusedRect);
+	}
+
 	@SuppressLint("DrawAllocation")
 	@Override
 	protected void onDraw(Canvas canvas) {
@@ -204,11 +224,15 @@ public class UIEditText extends EditText {
 		
 		mPaint.setAntiAlias(true);
 		
+		scrollX = getScrollX() + getMeasuredWidth();
+		realX = (int) (scrollX - getWidth() + 2 * DP);
+		realY = (int) (getHeight() - 4 * DP);
+		
 		if (mClear) {
 			mPaint.setColor(clearColor);
 			mPaint.setStyle(Style.FILL);
 			mPaint.setAlpha(180);
-			centerX = getWidth() - 16 * DP;
+			centerX = scrollX - 16 * DP;
 			centerY =  getHeight()/2.0f;
 			over = 3.5355f * DP;
 			canvas.drawCircle(centerX, centerY, 8 * DP, mPaint);
@@ -216,15 +240,19 @@ public class UIEditText extends EditText {
 			mPaint.setStrokeWidth(DP);
 			canvas.drawLine(centerX - over, centerY - over, centerX + over, centerY + over, mPaint);
 			canvas.drawLine(centerX + over, centerY - over, centerX - over, centerY + over, mPaint);
-			clearX = centerX - 10 * DP;
+			clearX = getWidth() - 26 * DP;
 		}
 		
 		if (getBackground() == null) {
 			return;
 		}
 	
-		mPaint.setStrokeWidth(DP);	
-		mPaint.setColor(strokeColor);
+		mPaint.setStrokeWidth(0.6f * DP);	
+		if (mFocus) {			
+			mPaint.setColor(strokeColor);
+		}else {
+			mPaint.setColor(DEFAULT_CLEARCOLOR);
+		}
 		
 		switch (type) {
 		case 3:
@@ -232,32 +260,32 @@ public class UIEditText extends EditText {
 				radius = getHeight() / 2;
 			}
 			mPaint.setStyle(Paint.Style.STROKE);
-	        canvas.drawRoundRect(new RectF(2 * DP, 4 * DP, getWidth() - 2 * DP, getHeight() - 4 * DP), radius, radius, mPaint);
+	        canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), radius, radius, mPaint);
 	        mPaint.setColor(Color.parseColor("#88F8F8F8"));
 	        mPaint.setStyle(Paint.Style.FILL);
-	        canvas.drawRoundRect(new RectF(2 * DP, 4 * DP, getWidth() - 2 * DP, getHeight() - 4 * DP), radius, radius, mPaint);
+	        canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), radius, radius, mPaint);
 			break;
 		case 4:
 			radius = getHeight() / 2;
 			mPaint.setStyle(Paint.Style.STROKE);
-	        canvas.drawRoundRect(new RectF(2 * DP, 4 * DP, getWidth() - 2 * DP, getHeight() - 4 * DP), radius, radius, mPaint);
+	        canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), radius, radius, mPaint);
 	        mPaint.setColor(Color.parseColor("#88F8F8F8"));
 	        mPaint.setStyle(Paint.Style.FILL);
-	        canvas.drawRoundRect(new RectF(2 * DP, 4 * DP, getWidth() - 2 * DP, getHeight() - 4 * DP), radius, radius, mPaint);
+	        canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), radius, radius, mPaint);
 			break;
 		case 2:
 			mPaint.setStyle(Style.STROKE);
-			canvas.drawRoundRect(new RectF(2 * DP, 4 * DP, getWidth() - 2 * DP, getHeight() - 4 * DP), DP, DP, mPaint);
+			canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), DP, DP, mPaint);
 			mPaint.setStyle(Style.FILL);
 			mPaint.setAlpha(40);
-			canvas.drawRoundRect(new RectF(2 * DP, 4 * DP, getWidth() - 2 * DP, getHeight() - 4 * DP), DP, DP, mPaint);
+			canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), DP, DP, mPaint);
 			break;
 		case 1:
 			mPaint.setStyle(Style.STROKE);
-			canvas.drawRoundRect(new RectF(2 * DP, 4 * DP, getWidth() - 2 * DP, getHeight() - 4 * DP), DP, DP, mPaint);
+			canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), DP, DP, mPaint);
 			break;
 		default:
-			canvas.drawLine(2f * DP, getHeight() - 4 * DP, getWidth() - 2f * DP, getHeight() - 4 * DP, mPaint);
+			canvas.drawLine(realX, realY, scrollX - 2f * DP, realY, mPaint);
 			break;
 		}
 	}
