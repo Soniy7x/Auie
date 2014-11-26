@@ -89,7 +89,6 @@ public class UIHumanEdittText extends LinearLayout {
 		mEditText.setTextColor(textColor);
 		mEditText.setGravity(Gravity.CENTER);
 		mEditText.setStrokeColor(strokeColor);
-		mEditText.setStrokeWidth(strokeWidth);
 		mEditText.setHintTextColor(textHintColor);
 		mEditText.setImeOptions(EditorInfo.IME_ACTION_SEND);
 		mEditText.setOnFocusChangeListener(new OnFocusChangeListener() {
