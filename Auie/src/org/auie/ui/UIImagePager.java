@@ -58,6 +58,8 @@ public class UIImagePager extends PopupWindow {
 	private int HEIGHT = 0;
 	private int DP = 1;
 	
+	private boolean saveFullScreen = true;
+	
 	private int currentIndex = 0;
 	
 	/**
@@ -68,9 +70,19 @@ public class UIImagePager extends PopupWindow {
 	 * @throws UEImageNotByteException
 	 */
 	public UIImagePager(Context context, List<Image> images) throws IOException, UEImageNotByteException{
-		this.datas = images;
 		init(context);
+		this.datas = images;
 		transformBitmap(images);
+	}
+	
+	public UIImagePager(Context context, ArrayList<Bitmap> bitmaps, boolean noScreen){
+		init(context);
+		this.saveFullScreen = noScreen;
+		this.datas = bitmaps;
+		this.bitmaps = bitmaps;
+		if (bitmaps.size() > 0) {
+			createIndexs();
+		}
 	}
 	
 	/**
@@ -175,7 +187,9 @@ public class UIImagePager extends PopupWindow {
 		
 		@Override
 		public void onDismiss() {
-			((Activity) context).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+			if (!saveFullScreen) {				
+				((Activity) context).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+			}
 			if (onDismissListener != null) {
 				//传递至外部
 				onDismissListener.onDismiss();
