@@ -1,7 +1,6 @@
 package org.auie.image;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +33,7 @@ public class UEImage {
 	public static final float TRANSFORMROUND_CIRCLE = -1;
 
 	private Bitmap bitmap = null;
+	private byte[] bytes = null;
 	
 	public UEImage(Drawable drawable){
 		drawableToBitmap(drawable);
@@ -120,9 +120,13 @@ public class UEImage {
 	}
 	
 	public byte[] toByteArray(){
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-	    return baos.toByteArray();
+		if (bytes == null) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+		    return baos.toByteArray();
+		}else {
+			return bytes;
+		}
 	}
 	
 	private Drawable bitmapToDrawable(){
@@ -152,8 +156,7 @@ public class UEImage {
 	public UEImage compressOnlyQuality(int quality) {  
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
-        ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());
-        bitmap = BitmapFactory.decodeStream(isBm, null, null);
+        bytes = baos.toByteArray();
         return this;
     }
 	
@@ -161,13 +164,12 @@ public class UEImage {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();  
         int options = 100;  
         bitmap.compress(Bitmap.CompressFormat.JPEG, options, baos);
-        while (baos.toByteArray().length / 1024 > quality) {        
+        while (baos.toByteArray().length / 1024 > quality) {
             baos.reset();
             bitmap.compress(Bitmap.CompressFormat.JPEG, options, baos);
             options -= 10;
         }  
-        ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());
-        bitmap = BitmapFactory.decodeStream(isBm, null, null);
+        bytes = baos.toByteArray();
         return this;
     }
 	
