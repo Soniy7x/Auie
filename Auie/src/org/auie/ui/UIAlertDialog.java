@@ -1,5 +1,8 @@
 package org.auie.ui;
 
+import org.auie.utils.UEDevice;
+
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -9,7 +12,9 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +33,7 @@ public class UIAlertDialog{
     private AlertDialog dialog;
     private Typeface typeface;
     private float scale;
+    private int screenWidth;
     private TextView titleTextView;
     private Button cancelButton;
     private Button actionButton;
@@ -43,9 +49,11 @@ public class UIAlertDialog{
     private int cancelBackgroundColor = Color.parseColor("#00000000");
     private int actionBackgroundColor = Color.parseColor("#00000000");
 
-    public UIAlertDialog(Context context){
+    @SuppressWarnings("deprecation")
+	public UIAlertDialog(Context context){
         this.context = context;
         this.scale = context.getResources().getDisplayMetrics().density;
+        this.screenWidth = ((Activity)context).getWindowManager().getDefaultDisplay().getWidth();
     }
 
     public UIAlertDialog setTitle(String title){
@@ -122,13 +130,28 @@ public class UIAlertDialog{
         ShapeDrawable shapeDrawable = new ShapeDrawable(roundRectShape);
         shapeDrawable.getPaint().setColor(backgroundColor);
         shapeDrawable.getPaint().setStyle(Paint.Style.FILL);
-        LinearLayout windowLayout  = new LinearLayout(context);
+        final LinearLayout windowLayout  = new LinearLayout(context);
         windowLayout.setLayoutParams(getParams(MATCH_PARENT, WRAP_CONTENT));
-        windowLayout.setMinimumWidth((int) (280 * scale + 0.5f));
         windowLayout.setOrientation(LinearLayout.VERTICAL);
         windowLayout.setBackgroundDrawable(shapeDrawable);
+        windowLayout.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
+			
+			@Override
+			public boolean onPreDraw() {
+				FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(screenWidth - dp2px(60), WRAP_CONTENT);
+				params.leftMargin = dp2px(20);
+				params.rightMargin = dp2px(20);
+				windowLayout.setLayoutParams(params);
+				windowLayout.getViewTreeObserver().removeOnPreDrawListener(this);
+				return false;
+			}
+		});
         titleTextView = new TextView(context);
-        titleTextView.setLayoutParams(getParams(MATCH_PARENT, dp2px(120f)));
+        if (UEDevice.getDeviceScreen(context) >= UEDevice.SCREEN_720P) {
+        	titleTextView.setLayoutParams(getParams(MATCH_PARENT, dp2px(120f)));			
+		}else {
+			titleTextView.setLayoutParams(getParams(MATCH_PARENT, dp2px(100f)));		
+		}
         titleTextView.setTextColor(titleColor);
         titleTextView.setGravity(Gravity.CENTER);
         titleTextView.setTextSize(16f);
@@ -137,7 +160,11 @@ public class UIAlertDialog{
         lineHorizontal.setLayoutParams(getParams(MATCH_PARENT, dp2px(0.5f)));
         lineHorizontal.setBackgroundColor(lineHorizontalColor);
         LinearLayout buttonLayout  = new LinearLayout(context);
-        buttonLayout.setLayoutParams(getParams(MATCH_PARENT, dp2px(48f)));
+        if (UEDevice.getDeviceScreen(context) >= UEDevice.SCREEN_720P) {
+        	buttonLayout.setLayoutParams(getParams(MATCH_PARENT, dp2px(48f)));		
+		}else {
+			buttonLayout.setLayoutParams(getParams(MATCH_PARENT, dp2px(40f)));		
+		}
         buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dp2px(0f), MATCH_PARENT, 1);
         cancelButton = new Button(context);
