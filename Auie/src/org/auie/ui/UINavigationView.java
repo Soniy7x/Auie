@@ -14,7 +14,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -58,7 +57,6 @@ public class UINavigationView extends LinearLayout {
 	private int titleColor = Color.parseColor("#CC222222");
 	private int statusType = STATUSBAR_DARK;
 	
-	private Timer timer = new Timer();
 	private Handler noticeHandler = new Handler();
 	private Runnable noticeRunnable = new Runnable() {
 		@Override
@@ -145,7 +143,9 @@ public class UINavigationView extends LinearLayout {
 		mNoticeTextView.setLayoutParams(params15);
 		mNoticeTextView.setTextSize(12);
 		mNoticeTextView.setVisibility(GONE);
-		mNoticeTextView.setAlpha(0.8f);
+		if (UEDevice.getOSVersionCode() >= 11) {			
+			mNoticeTextView.setAlpha(0.8f);
+		}
 		mNoticeTextView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
 		
 		RelativeLayout.LayoutParams params9 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -353,16 +353,13 @@ public class UINavigationView extends LinearLayout {
 	}
 	
 	public void addNotice(String content, long time){
-		if (!TextUtils.isEmpty(mNoticeTextView.getText())) {
-			timer.cancel();
-		}
 		mNoticeTextView.setText(content);
 		mNoticeTextView.setVisibility(VISIBLE);
 		mSingalTextView.setVisibility(GONE);
 		mSingalView.setVisibility(GONE);
 		mWIFIView.setVisibility(GONE);
 		if (time > NOTICE_SHOW_ALWAYS) {
-			timer.schedule(new TimerTask() {
+			new Timer().schedule(new TimerTask() {
 				@Override
 				public void run() {
 					noticeHandler.post(noticeRunnable);
