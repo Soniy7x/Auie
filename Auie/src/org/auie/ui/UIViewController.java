@@ -24,6 +24,8 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
+import org.auie.utils.UEDevice;
+
 public class UIViewController extends HorizontalScrollView {
 
 	private static final int[] ATTRS = new int[] {
@@ -532,7 +534,11 @@ public class UIViewController extends HorizontalScrollView {
 		drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
 		TextView tab = (TextView) tabsContainer.getChildAt(i);
 		tab.setCompoundDrawables(null, null, drawable, null);
-		tab.setCompoundDrawablePadding(2);
+		if (UEDevice.getDeviceScreen(getContext()) >= UEDevice.SCREEN_720P) {			
+			tab.setCompoundDrawablePadding(2);
+		}else {
+			tab.setCompoundDrawablePadding(8);
+		}
 	}
 	
 	public void removeNotice(int i){
