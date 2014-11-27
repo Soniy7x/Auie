@@ -37,7 +37,7 @@ import android.widget.TextView;
 @TargetApi(Build.VERSION_CODES.L)
 public class UILetterIndexView extends RelativeLayout {
 	
-	private UIHumanEdittText mEdittText;
+	private UIEditText mEdittText;
 	private ListView mListView;
 	private TextView mTextView;
 	private UIIndexBar mIndexBar;
@@ -69,11 +69,15 @@ public class UILetterIndexView extends RelativeLayout {
 
 	private void createView(){
 		
-		mEdittText = new UIHumanEdittText(getContext());
-		mEdittText.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		LayoutParams mEditTextParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		mEditTextParams.setMargins(UEMethod.dp2px(getContext(), 16), 0, UEMethod.dp2px(getContext(), 16), 0);
+		mEdittText = new UIEditText(getContext());
+		mEdittText.setLayoutParams(mEditTextParams);
 		mEdittText.setId(27);
+		mEdittText.setType(UIEditText.TYPE_CIRCLE);
+		mEdittText.setGravity(Gravity.CENTER);
+		mEdittText.setHint("请输入检索内容");
 		mEdittText.addTextChangedListener(textWatcher);
-		mEdittText.setBackgroundColor(Color.parseColor("#E8E8E8"));
 		
 		LayoutParams params1 = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		params1.addRule(BELOW, 27);
