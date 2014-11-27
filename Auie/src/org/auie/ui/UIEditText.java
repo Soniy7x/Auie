@@ -32,6 +32,7 @@ public class UIEditText extends EditText {
 	public static final int TYPE_CIRCLE = 4;
 	
 	private static final int DEFAULT_STROKECOLOR = Color.parseColor("#009EFC");
+	private static final int DEFAULT_UNSTROKEOLOR = Color.parseColor("#66808080");
 	private static final int DEFAULT_CLEARCOLOR = Color.parseColor("#CC808080");
 	private static final int DEFAULT_CLEARCENTERCOLOR = UEHtmlColor.WHITE;
 	
@@ -251,7 +252,7 @@ public class UIEditText extends EditText {
 		if (mFocus) {			
 			mPaint.setColor(strokeColor);
 		}else {
-			mPaint.setColor(DEFAULT_CLEARCOLOR);
+			mPaint.setColor(DEFAULT_UNSTROKEOLOR);
 		}
 		
 		switch (type) {
@@ -266,7 +267,7 @@ public class UIEditText extends EditText {
 	        canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), radius, radius, mPaint);
 			break;
 		case 4:
-			radius = getHeight() / 2;
+			radius = getHeight() / 10 * 4.6f;
 			mPaint.setStyle(Paint.Style.STROKE);
 	        canvas.drawRoundRect(new RectF(realX, 4 * DP, scrollX - 2 * DP, realY), radius, radius, mPaint);
 	        mPaint.setColor(Color.parseColor("#88F8F8F8"));
