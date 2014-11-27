@@ -18,9 +18,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.auie.utils.UE;
 
-import android.content.Context;
 import android.util.Log;
 
 public class UEHttpClient {
@@ -28,38 +28,49 @@ public class UEHttpClient {
 	protected static final int SOCKET_TIMEOUT = 5 * 1000;
 	protected static final int CONNECTION_TIMEOUT = 5 * 1000;
 
-	private DefaultHttpClient httpClient = null;
+	private static UEHttpClient instance = null;
+	private static DefaultHttpClient httpClient = null;
 	
-	public void get(Context context, String url, UEHttpParams params, UEHttpListener listener){
-		sendRequest(context, getGetRequest(url, params), listener);
+	private UEHttpClient(){}
+	
+	public static UEHttpClient getInstance(){
+		if (instance == null) {
+			instance = new UEHttpClient();
+		}
+		return instance;
 	}
 	
-	public void get(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
-		sendRequest(context, getGetRequest(url, params), handler, connectionTime, socketTime);
+	
+	public void get(String url, UEHttpParams params, UEHttpListener listener){
+		sendRequest(getGetRequest(url, params), listener);
 	}
 	
-	public void post(Context context, String url, UEHttpParams params, UEHttpListener handler){
-		sendRequest(context, getPostRequest(url, params), handler);
+	public void get(String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
+		sendRequest(getGetRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
-	public void post(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
-		sendRequest(context, getPostRequest(url, params), handler, connectionTime, socketTime);
+	public void post(String url, UEHttpParams params, UEHttpListener handler){
+		sendRequest(getPostRequest(url, params), handler);
 	}
 	
-	public void put(Context context, String url, UEHttpParams params, UEHttpListener handler){
-		sendRequest(context, getPutRequest(url, params), handler);
+	public void post(String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
+		sendRequest(getPostRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
-	public void put(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
-		sendRequest(context, getPutRequest(url, params), handler, connectionTime, socketTime);
+	public void put(String url, UEHttpParams params, UEHttpListener handler){
+		sendRequest(getPutRequest(url, params), handler);
 	}
 	
-	public void delete(Context context, String url, UEHttpParams params, UEHttpListener listener){
-		sendRequest(context, getDeleteRequest(url, params), listener);
+	public void put(String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
+		sendRequest(getPutRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
-	public void delete(Context context, String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
-		sendRequest(context, getDeleteRequest(url, params), handler, connectionTime, socketTime);
+	public void delete(String url, UEHttpParams params, UEHttpListener listener){
+		sendRequest(getDeleteRequest(url, params), listener);
+	}
+	
+	public void delete(String url, UEHttpParams params, UEHttpListener handler, int connectionTime, int socketTime){
+		sendRequest(getDeleteRequest(url, params), handler, connectionTime, socketTime);
 	}
 	
 	private HttpPut getPutRequest(String url, UEHttpParams params){
@@ -88,11 +99,15 @@ public class UEHttpClient {
 		return delete;
 	}
 	
-	protected void sendRequest(Context context, HttpRequest params, UEHttpListener handler){
-		sendRequest(context, params, handler, CONNECTION_TIMEOUT, SOCKET_TIMEOUT);
+	protected void sendRequest(HttpRequest params, UEHttpListener handler){
+		sendRequest(params, handler, CONNECTION_TIMEOUT, SOCKET_TIMEOUT);
 	}
 	
-	protected void sendRequest(Context context, HttpRequest params, UEHttpListener handler, int connectionTime, int socketTime){
+	protected void sendRequest(HttpRequest params, UEHttpListener handler, int connectionTime, int socketTime){
+		HttpParams httpParams = params.getParams();
+		HttpConnectionParams.setConnectionTimeout(httpParams, connectionTime);
+		HttpConnectionParams.setSoTimeout(httpParams, socketTime);
+		params.setParams(httpParams);
 		UERequestHolder request = new UERequestHolder(params, handler);
 		UERequestTask task = new UERequestTask(request, this);
 		task.execute();
