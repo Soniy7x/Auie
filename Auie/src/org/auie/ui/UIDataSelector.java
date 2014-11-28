@@ -1,15 +1,17 @@
 package org.auie.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import android.annotation.SuppressLint;
+import org.auie.utils.UEAdapter;
+import org.auie.utils.UEMethod;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
+import android.graphics.drawable.ColorDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,302 +19,422 @@ import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
 public class UIDataSelector extends PopupWindow{
-
-	public final int MATCH_PARENT = LinearLayout.LayoutParams.MATCH_PARENT;
-	public final int WRAP_CONTENT = LinearLayout.LayoutParams.WRAP_CONTENT;
 	
-	public static final int MODE_AUTOCLOSE = 99;
-    public static final int MODE_NO_AUTOCLOSE = 98;
-	
-    public static final int MODE_ONE = 1;
+	public static final int MODE_ONE = 1;
     public static final int MODE_TWO = 2;
-    public static final int MODE_ALL = 3;
-    
+    public static final int MODE_MAX = 3;
+	
+	private int DP = 0;
 	private int WIDTH = 0;
 	private int HEIGHT = 180;
-	private Context context;
-	private Typeface typeface;
-    private float scale;
-    private float padding = 0;
+	private int[] SELECTED_INDEX = {-1, -1, -1};
+	
+	private float topLineHeight = 0.5f;
+	private float leftLineWidth = 0.5f;
+	private float rightLineWidth = 0.5f;
+	private float padding = 0;
 	private int backgroundColor = Color.parseColor("#FFF3F3F3");
 	private int topLineColor = Color.parseColor("#33444444");
 	private int leftLineColor = Color.parseColor("#33444444");
 	private int rightLineColor = Color.parseColor("#33444444");
 	private int itemTextColor = Color.parseColor("#cc444444");
-	private ListView listView1;
-	private ListView listView2;
-	private ListView listView3;
-	private int mode = MODE_ONE;
-	private int autoMode = MODE_AUTOCLOSE;
+	private int itemTextSelectColor = Color.parseColor("#FFFFFF");
+	private int itemSelectBackgroundColor = Color.parseColor("#D8D8D8");
 	private int itemTextSize = 14;
-	private List<DataExtraAdpater> dataAdapters = new ArrayList<DataExtraAdpater>();
+	private Typeface typeface;
 	
-	public UIDataSelector(Context context, int height){
-		this(context);
-		this.HEIGHT = height;
+	private int mode = MODE_ONE;
+	private Context context;
+	private LinearLayout rootContainer;
+	private View topLineView;
+	private View leftLineView;
+	private View rightLineView;
+	private LinearLayout dataContainer;
+	private ListView fristListView;
+	private ListView secondListView;
+	private ListView thirdListView;
+	private boolean auto = true;
+	private boolean relation = true;
+	
+	private UIDataSelector selector = this;
+	
+	private OnItemSelectListener onItemSelectListener;
+	private List<DataSelectorAdpater> dataAdapters = new ArrayList<DataSelectorAdpater>();
+	
+	/**
+	 * 构造方法
+	 */
+	public UIDataSelector(Context context, OnItemSelectListener listener){
+		this(context, MODE_ONE, listener);
 	}
 	
+	/**
+	 * 构造方法
+	 * ((ViewGroup)(((Activity) context).findViewById(android.R.id.content))).getChildAt(0).getHeight()
+	 */
 	@SuppressWarnings("deprecation")
-	public UIDataSelector(Context context){
-		this.context = context;
+	public UIDataSelector(Context context, int mode, OnItemSelectListener listener){
 		WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-		this.WIDTH = manager.getDefaultDisplay().getWidth();
-        this.scale = context.getResources().getDisplayMetrics().density;
-	}
-	
-	public UIDataSelector setMode(int mode){
+		this.context = context;
 		this.mode = mode;
+		this.DP = UEMethod.dp2px(context, 1);
+		this.WIDTH = manager.getDefaultDisplay().getWidth();
+		this.onItemSelectListener = listener;
+		init();
+	}
+	
+	/**
+	 * 初始化数据集
+	 */
+	private void init() {
+		if (mode > MODE_MAX) {
+			mode = MODE_MAX;
+		}
+		dataAdapters.clear();
+		for (int i = 0; i < mode; i++) {
+			dataAdapters.add(getDefaultAdapter(i));
+		}
+	}
+	
+	/**
+	 * 刷新适配器数据集
+	 * @param index 数据集索引
+	 * @param data 数组数据集
+	 */
+	public UIDataSelector refreshAdapterData(int index, String[] data){
+		return refreshAdapterData(index, Arrays.asList(data));
+	}
+	
+	/**
+	 * 刷新适配器数据集
+	 * @param index 数据集索引
+	 * @param data 列表数据集
+	 */
+	public UIDataSelector refreshAdapterData(int index, List<String> data){
+		if (index < dataAdapters.size() && index >= 0 && data != null) {
+			dataAdapters.get(index).refresh(data);
+		}
 		return this;
 	}
 	
-	public UIDataSelector setAutoMode(int autoMode){
-		this.autoMode = autoMode;
+	/**
+	 * 构建内容
+	 */
+	private void builder(){
+		setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+		setContentView(createContentView());
+		setWidth(WIDTH);
+		setHeight(HEIGHT * DP);
+		setFocusable(true);
+	}
+	
+	/**
+	 * 构建内容视图
+	 * @return 内容视图
+	 */
+	private View createContentView(){
+		rootContainer = new LinearLayout(context);
+		rootContainer.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		rootContainer.setBackgroundColor(backgroundColor);
+		rootContainer.setOrientation(LinearLayout.VERTICAL);
+		topLineView = new View(context);
+		topLineView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, (int)(topLineHeight * DP)));
+		topLineView.setBackgroundColor(topLineColor);
+		dataContainer = new LinearLayout(context);
+		dataContainer.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		dataContainer.setOrientation(LinearLayout.HORIZONTAL);
+		dataContainer.setGravity(Gravity.CENTER);
+		int paddingPixel = (int)(padding * DP);
+		switch (mode) {
+		case 3:
+			thirdListView = new ListView(context);
+			thirdListView.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
+			thirdListView.setPadding(paddingPixel, paddingPixel, paddingPixel, paddingPixel);
+			thirdListView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+			thirdListView.setDivider(new ColorDrawable(Color.TRANSPARENT));
+			thirdListView.setOnItemClickListener(itemClickListener);
+			thirdListView.setAdapter(dataAdapters.get(2));
+			thirdListView.setTag(dataAdapters.get(2));
+		case 2:
+			secondListView = new ListView(context);
+			secondListView.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
+			secondListView.setPadding(paddingPixel, paddingPixel, paddingPixel, paddingPixel);
+			secondListView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+			secondListView.setDivider(new ColorDrawable(Color.TRANSPARENT));
+			secondListView.setOnItemClickListener(itemClickListener);
+			secondListView.setAdapter(dataAdapters.get(1));
+			secondListView.setTag(dataAdapters.get(1));
+		case 1:
+			fristListView = new ListView(context);
+			fristListView.setLayoutParams(new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
+			fristListView.setPadding(paddingPixel, paddingPixel, paddingPixel, paddingPixel);
+			fristListView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+			fristListView.setDivider(new ColorDrawable(Color.TRANSPARENT));
+			fristListView.setOnItemClickListener(itemClickListener);
+			fristListView.setAdapter(dataAdapters.get(0));
+			fristListView.setTag(dataAdapters.get(0));
+			break;
+		default:
+			break;
+		}
+		
+		dataContainer.addView(fristListView);
+		if (secondListView != null) {
+			leftLineView = new View(context);
+			leftLineView.setLayoutParams(new LayoutParams((int)(leftLineWidth * DP), LayoutParams.MATCH_PARENT));
+			leftLineView.setBackgroundColor(leftLineColor);
+			dataContainer.addView(leftLineView);
+			dataContainer.addView(secondListView);
+		}
+		if (thirdListView != null) {
+			rightLineView = new View(context);
+			rightLineView.setLayoutParams(new LayoutParams((int)(rightLineWidth * DP), LayoutParams.MATCH_PARENT));
+			rightLineView.setBackgroundColor(rightLineColor);
+			dataContainer.addView(rightLineView);
+			dataContainer.addView(thirdListView);
+		}
+		rootContainer.addView(topLineView);
+		rootContainer.addView(dataContainer);
+		
+		return rootContainer;
+	}
+	
+	/**
+	 * 默认展示方法
+	 */
+	public void show(){
+		builder();
+		showAtLocation(((ViewGroup)(((Activity) context).findViewById(android.R.id.content))).getChildAt(0), Gravity.BOTTOM, 0, 0);
+	}
+
+	/**
+	 * 是否自动关闭
+	 * @return true自动模式 false手动模式
+	 */
+	public boolean isAuto() {
+		return auto;
+	}
+
+	/**
+	 * 设置是否自动关闭
+	 * @param auto true自动模式 false手动模式
+	 */
+	public UIDataSelector setAuto(boolean auto) {
+		this.auto = auto;
+		return this;
+	}
+
+	/**
+	 * 是否使用关联检查
+	 * @return true是 false否
+	 */
+	public boolean isRelation() {
+		return relation;
+	}
+
+	/**
+	 * 设置是否使用关联检查
+	 * @param relation true是 false否
+	 */
+	public UIDataSelector setRelation(boolean relation) {
+		this.relation = relation;
+		return this;
+	}
+
+	/**
+	 * 设置顶线高度
+	 * @param topLineHeight
+	 */
+	public UIDataSelector setTopLineHeight(float topLineHeight) {
+		this.topLineHeight = topLineHeight;
+		return this;
+	}
+
+	/**
+	 * 设置左线宽度
+	 * @param leftLineHeight
+	 */
+	public UIDataSelector setLeftLineWidth(float leftLineWidth) {
+		this.leftLineWidth = leftLineWidth;
+		return this;
+	}
+
+	/**
+	 * 设置右线宽度
+	 * @param rightLineHeight
+	 */
+	public UIDataSelector setRightLineWidth(float rightLineWidth) {
+		this.rightLineWidth = rightLineWidth;
 		return this;
 	}
 	
-	public UIDataSelector setPadding(int padding){
+	/**
+	 * 设置内容边距
+	 * @param padding
+	 */
+	public UIDataSelector setPadding(float padding) {
 		this.padding = padding;
 		return this;
 	}
-	
-	public UIDataSelector setTypeface(Typeface typeface){
-		this.typeface = typeface;
+
+	/**
+	 * 设置控件背景颜色
+	 * @param backgroundColor
+	 */
+	public UIDataSelector setBackgroundColor(int backgroundColor) {
+		this.backgroundColor = backgroundColor;
 		return this;
 	}
-	
-	public UIDataSelector setItemTextColor(int itemTextColor){
+
+	/**
+	 * 设置顶线颜色
+	 * @param topLineColor
+	 */
+	public UIDataSelector setTopLineColor(int topLineColor) {
+		this.topLineColor = topLineColor;
+		return this;
+	}
+
+	/**
+	 * 设置左线颜色
+	 * @param leftLineColor
+	 */
+	public UIDataSelector setLeftLineColor(int leftLineColor) {
+		this.leftLineColor = leftLineColor;
+		return this;
+	}
+
+	/**
+	 * 设置右线颜色
+	 * @param rightLineColor
+	 */
+	public UIDataSelector setRightLineColor(int rightLineColor) {
+		this.rightLineColor = rightLineColor;
+		return this;
+	}
+
+	/**
+	 * 设置数据项默认字体颜色
+	 * @param itemTextColor
+	 */
+	public UIDataSelector setItemTextColor(int itemTextColor) {
 		this.itemTextColor = itemTextColor;
 		return this;
 	}
-	
-	public UIDataSelector setItemTextSize(int itemTextSize){
+
+	/**
+	 * 设置数据项被选择字体颜色
+	 * @param itemTextSelectColor
+	 */
+	public UIDataSelector setItemTextSelectColor(int itemTextSelectColor) {
+		this.itemTextSelectColor = itemTextSelectColor;
+		return this;
+	}
+
+	/**
+	 * 设置数据项背景颜色
+	 * @param itemSelectBackgroundColor
+	 */
+	public UIDataSelector setItemSelectBackgroundColor(int itemSelectBackgroundColor) {
+		this.itemSelectBackgroundColor = itemSelectBackgroundColor;
+		return this;
+	}
+
+	/**
+	 * 设置数据项字体大小
+	 * @param itemTextSize
+	 */
+	public UIDataSelector setItemTextSize(int itemTextSize) {
 		this.itemTextSize = itemTextSize;
 		return this;
 	}
-	
-	public void changAdapterData(int index, String[] newData){
-		if (dataAdapters.size() > index) {
-			dataAdapters.get(index).adpater.datas = newData;
-			dataAdapters.get(index).adpater.notifyDataSetChanged();
-		}else {
-			Log.e("Deliration", "无此项数据源");
-		}
-	}
-	
-	public void addAdapterData(List<String> data, OnItemSelectListener listener){
-		addAdapterData((String[])data.toArray(), listener);
-	}
-	
-	public void addAdapterData(String[] data, OnItemSelectListener listener){
-		dataAdapters.add(new DataExtraAdpater(new DataSelectorAdpater(data), listener));
-	}
-	
-	public void removeAdapterData(int index){
-		dataAdapters.remove(index);
-	}
-	
-	public void clearAdapterDatas(){
-		dataAdapters.clear();
-	}
-	
-	private int dp2px(float dp){
-        return (int) (dp * scale + 0.5f);
-    }
-	
-	private LinearLayout.LayoutParams getParams(int width, int height){
-        return new LinearLayout.LayoutParams(width, height);
-    }
-	
-	private LinearLayout.LayoutParams getParams(int width, int height, int weight){
-        return new LinearLayout.LayoutParams(width, height, weight);
-    }
-	
-	@SuppressWarnings("deprecation")
-	@SuppressLint("InflateParams") 
-	public UIDataSelector builder(){
-		setBackgroundDrawable(new BitmapDrawable());
-		setContentView(createContentView());
-		setWidth(WIDTH);
-		setHeight(dp2px(HEIGHT));
-		setFocusable(true);
+
+	/**
+	 * 设置数据项字体
+	 * @param typeface
+	 */
+	public UIDataSelector setTypeface(Typeface typeface) {
+		this.typeface = typeface;
 		return this;
 	}
-	
-	@SuppressWarnings("deprecation")
-	private View createContentView(){
-		LinearLayout rootView = new LinearLayout(context);
-		rootView.setLayoutParams(getParams(MATCH_PARENT, dp2px(HEIGHT)));
-		rootView.setBackgroundColor(backgroundColor);
-		rootView.setOrientation(LinearLayout.VERTICAL);
-		View topLineView = new View(context);
-		topLineView.setLayoutParams(getParams(MATCH_PARENT, dp2px(0.5f)));
-		topLineView.setBackgroundColor(topLineColor);
-		LinearLayout contentView = new LinearLayout(context);
-		contentView.setLayoutParams(getParams(MATCH_PARENT, MATCH_PARENT));
-		contentView.setOrientation(LinearLayout.HORIZONTAL);
-		switch (mode) {
-		case 3:
-			listView3 = new ListView(context);
-			listView3.setLayoutParams(getParams(0, MATCH_PARENT, 1));
-			listView3.setPadding(dp2px(padding), dp2px(padding), dp2px(padding), dp2px(padding));
-			listView3.setSelector(new BitmapDrawable());
-			listView3.setDivider(context.getResources().getDrawable(android.R.color.transparent));
-			listView3.setOnItemClickListener(itemClickListener);
-			if (dataAdapters.size() > 2) {
-				listView3.setAdapter(dataAdapters.get(2).adpater);
-				listView3.setTag(dataAdapters.get(2));
-			}else{
-				listView3.setAdapter(getDefaultAdapter());
-			}
-		case 2:
-			listView2 = new ListView(context);
-			listView2.setLayoutParams(getParams(0, MATCH_PARENT, 1));
-			listView2.setPadding(dp2px(padding), dp2px(padding), dp2px(padding), dp2px(padding));
-			listView2.setSelector(new BitmapDrawable());
-			listView2.setDivider(context.getResources().getDrawable(android.R.color.transparent));
-			listView2.setOnItemClickListener(itemClickListener);
-			if (dataAdapters.size() > 1) {
-				listView2.setAdapter(dataAdapters.get(1).adpater);
-				listView2.setTag(dataAdapters.get(1));
-			}else{
-				listView2.setAdapter(getDefaultAdapter());
-			}
-		default:
-			listView1 = new ListView(context);
-			listView1.setLayoutParams(getParams(0, MATCH_PARENT, 1));
-			listView1.setPadding(dp2px(padding), dp2px(padding), dp2px(padding), dp2px(padding));
-			listView1.setSelector(new BitmapDrawable());
-			listView1.setDivider(context.getResources().getDrawable(android.R.color.transparent));
-			listView1.setOnItemClickListener(itemClickListener);
-			if (dataAdapters.size() > 0) {
-				listView1.setAdapter(dataAdapters.get(0).adpater);
-				listView1.setTag(dataAdapters.get(0));
-			}else{
-				listView1.setAdapter(getDefaultAdapter());
-			}
-			break;
-		}
-		contentView.addView(listView1);
-		if (listView2 != null) {
-			View leftLineView = new View(context);
-			leftLineView.setLayoutParams(getParams(dp2px(0.5f), MATCH_PARENT));
-			leftLineView.setBackgroundColor(leftLineColor);
-			contentView.addView(leftLineView);
-			contentView.addView(listView2);
-		}
-		if (listView3 != null) {
-			View rightLineView = new View(context);
-			rightLineView.setLayoutParams(getParams(dp2px(0.5f), MATCH_PARENT));
-			rightLineView.setBackgroundColor(rightLineColor);
-			contentView.addView(rightLineView);
-			contentView.addView(listView3);
-		}
-		rootView.addView(topLineView);
-		rootView.addView(contentView);
-		return rootView;
-	}
-	
+
 	private OnItemClickListener itemClickListener = new OnItemClickListener() {
 		
 		@Override
 		public void onItemClick(AdapterView<?> adapterView, View view, int position, long arg3) {
-			DataExtraAdpater adpater = (DataExtraAdpater) adapterView.getTag();
-			adpater.itemSelectListener.OnItemSelect(adapterView, adpater.adpater.datas, position, adpater.adpater.datas[position]);
-			if (autoMode == MODE_AUTOCLOSE) {
-				close();
+			DataSelectorAdpater adpater = (DataSelectorAdpater) adapterView.getTag();
+			int index = dataAdapters.indexOf(adpater);
+			if (relation) {
+				if (index != 0 && SELECTED_INDEX[index - 1] == -1) {
+					UIToast.show(context, "请从左至右依次选择");
+					return;
+				}
+			}
+			List<?> datas = adpater.getDatas();
+			if (onItemSelectListener == null) {
+				UIToast.show(context, "未设置OnItemClickListener");
+			}else {		
+				onItemSelectListener.OnItemSelect(selector, position, (String)datas.get(position), datas, index);
+			}
+			if (auto && index == dataAdapters.size() - 1) {
+				dismiss();
+			}else {
+				SELECTED_INDEX[index] = position;
+				adpater.notifyDataSetChanged();
 			}
 		}
 	};
 	
-	private ListAdapter getDefaultAdapter(){
-		return new DataSelectorAdpater(new String[]{"无数据源"});
+	private DataSelectorAdpater getDefaultAdapter(int index){
+		return new DataSelectorAdpater(Arrays.asList(new String[]{"无数据"}), index);
 	}
-	
-	public UIDataSelector show(){
-		showAtLocation(((ViewGroup)(((Activity) context).findViewById(android.R.id.content))).getChildAt(0), Gravity.BOTTOM, 0, 0);
-		return this;
-	}
-	
-	public UIDataSelector show(View parentView){
-		showAsDropDown(parentView);
-		return this;
-	}
-	
-	public UIDataSelector show(View parentView, int x, int y){
-		showAsDropDown(parentView, x, y);
-		return this;
-	}
-	
-	public UIDataSelector show(View parentView,int gravity, int x, int y){
-		showAtLocation(parentView, gravity, x, y);
-		return this;
-	}
-	
+
 	public interface OnItemSelectListener{
-		public void OnItemSelect(View view, String[] datas, int position, String value);
+		public void OnItemSelect(UIDataSelector selector, int position, String value, List<?> datas, int index);
 	}
 	
-	private void close(){
-		dismiss();
-	}
-	
-	class DataExtraAdpater{
-		public DataSelectorAdpater adpater;
-		public OnItemSelectListener itemSelectListener;
+	class DataSelectorAdpater extends UEAdapter{
+
+		private int index;
 		
-		public DataExtraAdpater(DataSelectorAdpater adpater, OnItemSelectListener itemSelectListener){
-			this.adpater = adpater;
-			this.itemSelectListener = itemSelectListener;
-		}
-	}
-	
-	class DataSelectorAdpater extends BaseAdapter{
-		
-		private String[] datas;
-		
-		public DataSelectorAdpater(String[] datas){
-			this.datas = datas;
-		}
-		
-		@Override
-		public int getCount() {
-			return datas.length;
+		public DataSelectorAdpater(List<?> datas, int index) {
+			super(datas);
+			this.index = index;
 		}
 
 		@Override
-		public Object getItem(int position) {
-			return datas[position];
-		}
-
-		@Override
-		public long getItemId(int arg0) {
-			return 0;
-		}
-
-		@Override
-		public View getView(final int position, View view, ViewGroup parent) {
-			if (view == null) {
-				TextView textView = new TextView(context);
-				textView.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, dp2px(36)));
+		public View getView(int position, View convertView, ViewGroup parent) {
+			TextView textView;
+			if (convertView == null) {
+				textView = new TextView(context);
+				textView.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, 40 * DP));
 				textView.setTextSize(itemTextSize);
-				textView.setTextColor(itemTextColor);
 				textView.setGravity(Gravity.CENTER);
 				if (typeface != null) {
 					textView.setTypeface(typeface);
 				}
-				view = textView;
+				convertView = textView;
+			}else {
+				textView = (TextView) convertView;
 			}
-			((TextView)view).setText(datas[position]);
-			return view;
+			if (position == SELECTED_INDEX[index]) {
+				textView.setBackgroundColor(itemSelectBackgroundColor);
+				textView.setTextColor(itemTextSelectColor);
+			}else {
+				textView.setBackgroundColor(Color.TRANSPARENT);
+				textView.setTextColor(itemTextColor);
+			}
+			textView.setText((CharSequence) getItem(position));
+			return convertView;
 		}
 		
 	}
+	
 }
