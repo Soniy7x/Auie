@@ -26,6 +26,10 @@ public abstract class UEAdapter implements ListAdapter, SpinnerAdapter {
 		}
 	}
 	
+	public List<?> getDatas(){
+		return datas;
+	}
+	
 	@Override
 	public int getCount() {
 		if (datas == null) {
