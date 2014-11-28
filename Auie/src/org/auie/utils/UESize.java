@@ -27,7 +27,7 @@ public final class UESize {
 			float over = screen/(float)device * 4;
 			if (screen >  device) {
 				baseSize += over;
-			}else {
+			}else if (screen < device) {
 				baseSize -= over;
 			}
 			method = clazz.getMethod("setTextSize", new Class[]{int.class,float.class});
