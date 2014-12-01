@@ -125,7 +125,6 @@ public class UIAlertnateTextDialog extends PopupWindow{
 		LinearLayout.LayoutParams params4 = new LinearLayout.LayoutParams(0, MATCH_PARENT, 1);
 		UIButton submitButton = new UIButton(context);
 		submitButton.setBackgroundColor(backgroundColor);
-		submitButton.showStroke(false);
 		submitButton.setLayoutParams(params4);
 		submitButton.setTextColor(submitButtonColor);
 		submitButton.setTextSize(buttonSize);
@@ -145,7 +144,6 @@ public class UIAlertnateTextDialog extends PopupWindow{
 		UIButton cancelButton = new UIButton(context);
 		cancelButton.setLayoutParams(params4);
 		cancelButton.setBackgroundColor(backgroundColor);
-		cancelButton.showStroke(false);
 		cancelButton.setTextColor(cancelButtonColor);
 		cancelButton.setTextSize(buttonSize);
 		cancelButton.setText("取消");

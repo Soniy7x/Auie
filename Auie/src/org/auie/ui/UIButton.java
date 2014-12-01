@@ -1,242 +1,175 @@
 package org.auie.ui;
 
+import org.auie.image.UEImage;
+import org.auie.utils.UEDevice;
+
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.StateListDrawable;
-import android.graphics.drawable.shapes.RoundRectShape;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnTouchListener;
-import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.RemoteViews.RemoteView;
 
-@SuppressLint("ClickableViewAccessibility") 
-@SuppressWarnings("deprecation")
-public class UIButton extends RelativeLayout implements OnTouchListener{
-	
-	public static final int RADIUS_MIN = Integer.MIN_VALUE;
-	public static final int RADIUS_MAX = Integer.MAX_VALUE;
-	
-	private LinearLayout rootLayout;
-	private ImageView imageView;
-	private TextView textView;
-	
-	private boolean showStroke = false;
-	
+/**
+ * 
+ * 按钮类
+ * 
+ * @author Soniy7x
+ *
+ */
+@SuppressLint("ClickableViewAccessibility")
+@RemoteView
+@TargetApi(Build.VERSION_CODES.L)
+public class UIButton extends Button {
+
+	private static final int DEFAULT_BACKGROUNDCOLOR = Color.parseColor("#D8D8D8");
+
+	private int backgroundColor = DEFAULT_BACKGROUNDCOLOR;
+	private Bitmap bitmap;
 	private float radius = 5;
-	private float strokeWidth = 0.7f;
-	
-	private int backgroundColor = Color.parseColor("#D8D8D8");
-	private int textColor = Color.parseColor("#F8F8F8");
-	private int strokeColor = Color.parseColor("#D8D8D8");
-	
-	private float textSize = 14;
-	private String text = "";
-	
+	private float distanceX = 0;
+	private float distanceY = 0;
+	private Paint mPaint = new Paint();
+
+	/**
+	 * 构造方法
+	 */
 	public UIButton(Context context) {
 		super(context);
-		onCreate(null);
+		init();
 	}
 
+	/**
+	 * 构造方法
+	 */
 	public UIButton(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		onCreate(attrs);
+		init();
 	}
 
-	public UIButton(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-		onCreate(attrs);
-	}
-	
-	private void onCreate(AttributeSet attrs){
-		
-		setBackgroundDrawable(createStateColor());
-		setOnTouchListener(this);
-		
-		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		params.addRule(RelativeLayout.CENTER_IN_PARENT, TRUE);
-		rootLayout = new LinearLayout(getContext());
-		rootLayout.setLayoutParams(params);
-		rootLayout.setGravity(Gravity.CENTER);
-		rootLayout.setBackgroundColor(Color.TRANSPARENT);
-		rootLayout.setOrientation(LinearLayout.HORIZONTAL);
-		
-		
-		textView = new TextView(getContext());
-		textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-		textView.setText(text);
-		textView.setTextSize(textSize);
-		textView.setTextColor(textColor);
-		textView.setSingleLine(true);
-		
-		int size = (int) textView.getTextSize();
-		LinearLayout.LayoutParams params2 = new LinearLayout.LayoutParams(size / 2 * 5, size / 2 * 5);
-		params2.setMargins(0, 0, size / 2, 0);
-		imageView = new ImageView(getContext());
-		imageView.setScaleType(ScaleType.FIT_CENTER);
-		imageView.setVisibility(View.GONE);
-		imageView.setLayoutParams(params2);
-		
-		rootLayout.addView(imageView);
-		rootLayout.addView(textView);
-		addView(rootLayout);
-	}
-	
-	private ShapeDrawable createBackground(int color, int alpha){
-		float[] outerR = new float[] { radius, radius, radius, radius, radius, radius, radius, radius };
-		RoundRectShape roundRectShape = new RoundRectShape(outerR, null, null);
-        ShapeDrawable shapeDrawable = new ShapeDrawable(roundRectShape);
-        shapeDrawable.getPaint().setColor(color);
-        shapeDrawable.getPaint().setAlpha(alpha);
-        shapeDrawable.getPaint().setStyle(Paint.Style.FILL);
-        return shapeDrawable;
-	}
-	
-	public int getBackgroundColor(){
-		return backgroundColor;
-	}
-	
-	public void setBackgroundColor(int color){
-		this.backgroundColor = color;
-		super.setBackgroundDrawable(createStateColor());
+	/**
+	 * 构造方法
+	 */
+	public UIButton(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
+		init();
 	}
 
-	public int getTextColor() {
-		return textColor;
+	/**
+	 * 构造方法
+	 */
+	public UIButton(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+		super(context, attrs, defStyleAttr, defStyleRes);
+		init();
 	}
 
-	public void setTextColor(int textColor) {
-		this.textColor = textColor;
-		this.textView.setTextColor(textColor);
+	/**
+	 * 初始化方法
+	 */
+	private void init() {
+		if (UEDevice.getOSVersionCode() >= 11) {
+			try {
+				setBackgroundColor(((ColorDrawable) getBackground()).getColor());
+			} catch (Exception e) {
+				setBackgroundColor(backgroundColor);
+			}
+		} else {
+			setBackgroundColor(backgroundColor);
+		}
+		setGravity(Gravity.CENTER);
 	}
 
-	public String getText() {
-		return text;
+	/**
+	 * 设置背景颜色
+	 * @param backgroundColor
+	 */
+	@SuppressWarnings("deprecation")
+	public void setBackgroundColor(int backgroundColor) {
+		this.backgroundColor = backgroundColor;
+		if (UEDevice.getOSVersionCode() >= 16) {
+			super.setBackground(UEImage.createBackground(backgroundColor, 255, radius));
+		} else {
+			super.setBackgroundDrawable(UEImage.createBackground(backgroundColor, 255, radius));
+		}
 	}
 
-	public void setText(String text) {
-		this.text = text;
-		this.textView.setText(text);
-	}
-	
+	/**
+	 * 获得圆角大小
+	 * @return 圆角大小
+	 */
 	public float getRadius() {
 		return radius;
 	}
 
+	/**
+	 * 设置圆角大小
+	 * @param radius 圆角大小
+	 */
 	public void setRadius(float radius) {
 		this.radius = radius;
-		setBackgroundDrawable(createStateColor());
+		setBackgroundColor(backgroundColor);
 	}
 	
-	public boolean isShowStroke() {
-		return showStroke;
-	}
-
-	public void setShowStroke(boolean showStroke) {
-		this.showStroke = showStroke;
-	}
-
-	public Drawable getImage(){
-		return imageView.getDrawable();
-	}
-
-	public void setImageDrawable(Drawable drawable){
-		imageView.setImageDrawable(drawable);
-		imageView.setVisibility(VISIBLE);
-	}
-	
+	/**
+	 * 设置图片资源
+	 * @param resId 资源ID
+	 */
 	public void setImageResource(int resId){
-		imageView.setImageResource(resId);
-		imageView.setVisibility(VISIBLE);
+		setImage(new UEImage(getResources(), resId).toBitmap());
 	}
 	
-	public void setImageBitmap(Bitmap bitmap){
-		imageView.setImageBitmap(bitmap);
-		imageView.setVisibility(VISIBLE);
+	/**
+	 * 设置图片资源
+	 * @param bitmap 图片
+	 */
+	public void setImage(Bitmap bitmap){
+		this.bitmap = bitmap;
+		this.setText("");
+		invalidate();
 	}
 	
-	public float getTextSize() {
-		return textSize;
-	}
-
-	public void setTextSize(float textSize) {
-		this.textSize = textSize;
-		int size = (int) textSize;
-		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size / 2 * 5, size / 2 * 5);
-		params.setMargins(0, 0, size / 2, 0);
-		textView.setTextSize(textSize);
-		imageView.setLayoutParams(params);
-	}
-	
-	public float getStrokeWidth() {
-		return strokeWidth;
-	}
-
-	public void setStrokeWidth(float strokeWidth) {
-		this.strokeWidth = strokeWidth;
-	}
-
-	public int getStrokeColor() {
-		return strokeColor;
-	}
-
-	public void setStrokeColor(int strokeColor) {
-		this.strokeColor = strokeColor;
-	}
-
-	private StateListDrawable createStateColor(){
-		StateListDrawable colors = new StateListDrawable();
-		colors.addState(View.PRESSED_ENABLED_FOCUSED_SELECTED_STATE_SET, createBackground(backgroundColor, 188));
-		colors.addState(View.EMPTY_STATE_SET, createBackground(backgroundColor, 255));
-		return colors;
+	/**
+	 * 设置文字内容
+	 * @param text 内容
+	 */
+	public void setText(String text){
+		if (bitmap == null) {
+			super.setText(text);
+		}
 	}
 
 	@Override
-	public boolean onTouch(View v, MotionEvent event) {
+	public boolean onTouchEvent(MotionEvent event) {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			getBackground().setState(View.PRESSED_ENABLED_FOCUSED_SELECTED_STATE_SET);
+			setAlpha(0.6f);
 			super.onTouchEvent(event);
 			return true;
 		case MotionEvent.ACTION_UP:
-			getBackground().setState(View.EMPTY_STATE_SET);
-			return false;
+			setAlpha(1f);
+			return super.onTouchEvent(event);
 		default:
-			getBackground().setState(View.PRESSED_ENABLED_FOCUSED_SELECTED_STATE_SET);
-			return false;
+			setAlpha(0.6f);
+			return super.onTouchEvent(event);
 		}
 	}
-	
-	@SuppressLint("DrawAllocation") 
-	@Override  
-    protected void onDraw(Canvas canvas)  
-    {  
-        super.onDraw(canvas);
-        
-        if (showStroke) {
-        	
-        	Paint paint = new Paint(); 
-        	paint.setAntiAlias(true);
-            paint.setColor(strokeColor);
-            paint.setStrokeWidth(strokeWidth);
-            paint.setStyle(Paint.Style.STROKE);
-            
-            float radius = getRadius() > getHeight() ? getHeight() - 40 : getRadius();
-            
-            canvas.drawRoundRect(new RectF(0, 0, getWidth(), getHeight()), radius, radius, paint);  
+
+	@Override
+	protected void onDraw(Canvas canvas) {
+		super.onDraw(canvas);
+		if (bitmap != null) {
+			distanceX = (float) ((getWidth() - bitmap.getWidth())/2.0);
+			distanceY = (float) ((getHeight() - bitmap.getHeight())/2.0);
+			canvas.drawBitmap(bitmap, distanceX, distanceY, mPaint);
 		}
-    }
+	}
 	
 }
