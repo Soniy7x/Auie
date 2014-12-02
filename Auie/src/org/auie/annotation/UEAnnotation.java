@@ -22,6 +22,12 @@ public final class UEAnnotation {
 	public @interface UELayout {
 		int value() default -1;
 	}
+	
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface UEConfig {
+		int value() default -1;
+	}
 
 	/**
 	 * 类 · 初始化对象
