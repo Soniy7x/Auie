@@ -282,12 +282,13 @@ public class UIPhotoSelector extends PopupWindow {
 		topLeftButton.setBackgroundColor(Color.parseColor("#2e3334"));
 		topLeftButton.setOnClickListener(topLeftClickListener);
 		
-		LayoutParams topRightParams = (LayoutParams) getParams2(80 * DP, 30 * DP);
+		LayoutParams topRightParams = (LayoutParams) getParams2(80 * DP, 40 * DP);
 		topRightParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
 		topRightParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
 		topRightButton = new UIButton(context);
 		topRightButton.setId(1992);
 		topRightButton.setText("预览");
+		topRightButton.setTextSize(14);
 		topRightButton.setTextColor(Color.parseColor("#5F5F5F"));
 		topRightButton.setBackgroundColor(Color.parseColor("#2e3334"));
 		topRightButton.setLayoutParams(topRightParams);
@@ -332,6 +333,7 @@ public class UIPhotoSelector extends PopupWindow {
 		bottomLeftButton = new UIButton(context);
 		bottomLeftButton.setLayoutParams(bottomLeftParams);
 		bottomLeftButton.setText("切换相册");
+		bottomLeftButton.setTextSize(14);
 		bottomLeftButton.setTextColor(Color.parseColor("#B8B8B8"));
 		bottomLeftButton.setBackgroundColor(Color.parseColor("#2e3334"));
 		bottomLeftButton.setOnClickListener(bottomLeftClickListener);
@@ -342,9 +344,9 @@ public class UIPhotoSelector extends PopupWindow {
 		bottomRightParams.setMargins(0, 8 * DP, 8 * DP, 0);
 		bottomRightButton = new UIButton(context);
 		bottomRightButton.setLayoutParams(bottomRightParams);
-		bottomRightButton.setTextSize(12);
 		bottomRightButton.setVisibility(View.GONE);
 		bottomRightButton.setText("完成");
+		bottomRightButton.setTextSize(12);
 		bottomRightButton.setTextColor(Color.parseColor("#FFFFFF"));
 		bottomRightButton.setBackgroundColor(Color.parseColor("#00b58a"));
 		bottomRightButton.setOnClickListener(bottomRightClickListener);
