@@ -37,6 +37,7 @@ public class UIButton extends Button {
 	private float radius = 5;
 	private float distanceX = 0;
 	private float distanceY = 0;
+	private float alpha = 0;
 	private Paint mPaint = new Paint();
 
 	/**
@@ -84,6 +85,7 @@ public class UIButton extends Button {
 		} else {
 			setBackgroundColor(backgroundColor);
 		}
+		alpha = getAlpha();
 		setGravity(Gravity.CENTER);
 	}
 
@@ -95,9 +97,9 @@ public class UIButton extends Button {
 	public void setBackgroundColor(int backgroundColor) {
 		this.backgroundColor = backgroundColor;
 		if (UEDevice.getOSVersionCode() >= 16) {
-			super.setBackground(UEImage.createBackground(backgroundColor, 255, radius));
+			super.setBackground(UEImage.createBackground(backgroundColor, radius));
 		} else {
-			super.setBackgroundDrawable(UEImage.createBackground(backgroundColor, 255, radius));
+			super.setBackgroundDrawable(UEImage.createBackground(backgroundColor, radius));
 		}
 	}
 
@@ -146,18 +148,27 @@ public class UIButton extends Button {
 		}
 	}
 
+	/**
+	 * 设置控件透明度
+	 * @param alpha
+	 */
+	public void setAlpha(float alpha) {
+		this.alpha = alpha;
+		super.setAlpha(alpha);
+	}
+	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			setAlpha(0.6f);
+			super.setAlpha(alpha - 0.3f);
 			super.onTouchEvent(event);
 			return true;
 		case MotionEvent.ACTION_UP:
-			setAlpha(1f);
+			super.setAlpha(alpha);
 			return super.onTouchEvent(event);
 		default:
-			setAlpha(0.6f);
+			super.setAlpha(alpha - 0.3f);
 			return super.onTouchEvent(event);
 		}
 	}
