@@ -2,21 +2,26 @@ package org.auie.base;
 
 import java.util.Locale;
 
+import org.auie.annotation.UEAnnotation.UEConfig;
 import org.auie.annotation.UEAnnotation.UELayout;
 import org.auie.annotation.UEAnnotationManager;
 import org.auie.ui.UIBatteryView;
 import org.auie.ui.UINavigationView;
 import org.auie.ui.UISingalView;
+import org.auie.utils.UE;
 import org.auie.utils.UEDevice;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.XmlResourceParser;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
@@ -28,6 +33,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
 public abstract class UENavigationActivity extends Activity implements OnClickListener{
 
@@ -58,6 +64,8 @@ public abstract class UENavigationActivity extends Activity implements OnClickLi
 	 * 初始化开始方法
 	 * (Initialization begins)
 	 */
+	@SuppressWarnings("deprecation")
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void initializeBegin() {
 		wifiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		mNavigationView = new UINavigationView(this);
@@ -80,11 +88,55 @@ public abstract class UENavigationActivity extends Activity implements OnClickLi
 					Log.d("AUIE", e.getMessage());
 				}
 			}
-			mNavigationView.addView(LayoutInflater.from(activity).inflate(layout, null));
+			View view = LayoutInflater.from(activity).inflate(layout, mNavigationView, false);
+			LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();
+			params.height = getWindowManager().getDefaultDisplay().getHeight() - (int) mNavigationView.getNavigationHeight();
+			view.setLayoutParams(params);
+			mNavigationView.addView(view);
+		}
+		if (getClass().isAnnotationPresent(UEConfig.class)) {
+			int config = getClass().getAnnotation(UEConfig.class).value();
+			if (config != -1) {
+				readXML(config);
+			}
 		}
 		UEAnnotationManager.getInstance().initialize(this, false);
 	}
 
+	/**
+	 * 读取XML配置文件
+	 * @param id 配置文件索引
+	 */
+	private void readXML(int id){
+		String name;
+		XmlResourceParser xrp = getResources().getXml(id);
+		try {
+			while(xrp.getEventType() != XmlResourceParser.END_DOCUMENT){
+				if (xrp.getEventType() == XmlResourceParser.START_TAG) {
+					name = xrp.getName();
+					if (name.equals("BackgroundColor")) {
+						mNavigationView.setBackgroundColor(xrp.getAttributeIntValue(0, mNavigationView.getBackgroundColor()));
+					}
+					if (name.equals("StatusType")) {
+						mNavigationView.setStatusType(xrp.getAttributeIntValue(0, mNavigationView.getStatusType()));
+					}
+					if (name.equals("TitleColor")) {
+						mNavigationView.setTitleColor(xrp.getAttributeIntValue(0, mNavigationView.getTitleColor()));
+					}
+					if (name.equals("LineBackgroundColor")) {
+						mNavigationView.setLineBackgroundColor(xrp.getAttributeIntValue(0, mNavigationView.getTitleColor()));
+					}
+					if (name.equals("NavigationTextColor")) {
+						mNavigationView.setNavigationTextColor(xrp.getAttributeIntValue(0, mNavigationView.getNavigationTextColor()));
+					}
+				}
+				xrp.next();
+			}
+		} catch (Exception e) {
+			Log.d(UE.TAG, "UEConfig配置出错"+e.toString());
+		}
+	}
+	
 	/**
 	 * 初始化准备方法
 	 * (Initialization prepares, here you can perform some method)
@@ -317,6 +369,4 @@ public abstract class UENavigationActivity extends Activity implements OnClickLi
 			finish();
 		}
 	}
-	
-	
 }
