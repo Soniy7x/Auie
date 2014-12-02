@@ -174,8 +174,7 @@ public class UINavigationView extends LinearLayout {
 		
 		mActionBar = new RelativeLayout(getContext());
 		mActionBar.setBackgroundColor(navigationBarBackgroundColor);
-		mActionBar.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 
-				UEDevice.getDeviceScreen(getContext()) < UEDevice.SCREEN_720P ? 38 * DP : 48 * DP));
+		mActionBar.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, UEDevice.getDeviceScreen(getContext()) < UEDevice.SCREEN_720P ? 38 * DP : 48 * DP));
 		
 		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, 24 * DP);
 		params2.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
@@ -224,7 +223,7 @@ public class UINavigationView extends LinearLayout {
 		mActionBar.addView(mRightTextView);
 
 		mLine = new View(getContext());
-		mLine.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, (int)(DP * 0.8)));
+		mLine.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, DP));
 		mLine.setBackgroundColor(lineBackgroundColor);
 		
 		addView(mStatus);
@@ -234,6 +233,14 @@ public class UINavigationView extends LinearLayout {
 		setStatusType(statusType);
 		
 		handler.post(runnable);
+	}
+	
+	public int getNavigationHeight(){
+		if (UEDevice.getDeviceScreen(getContext()) >= UEDevice.SCREEN_720P) {
+			return 73 * DP;
+		}else {
+			return 63 * DP;
+		}
 	}
 	
 	public void setLeftImageOnClickListener(OnClickListener mListener){
@@ -331,9 +338,17 @@ public class UINavigationView extends LinearLayout {
 		setNavigationBarBackgroundColor(backgroundColor);
 	}
 	
+	public int getBackgroundColor(){
+		return navigationBarBackgroundColor;
+	}
+	
 	public void setLineBackgroundColor(int lineBackgroundColor) {
 		this.lineBackgroundColor = lineBackgroundColor;
 		this.mLine.setBackgroundColor(lineBackgroundColor);
+	}
+	
+	public int getLineBackgroundColor(){
+		return lineBackgroundColor;
 	}
 
 	public void setStatusType(int statusType) {
@@ -346,6 +361,10 @@ public class UINavigationView extends LinearLayout {
 		this.mSingalView.setPaintColor(statusType);
 		this.mWIFIView.setPaintColor(statusType);
 		this.mBatteryView.setPaintColor(statusType);
+	}
+	
+	public int getStatusType(){
+		return statusType;
 	}
 	
 	public void addNotice(String content){
@@ -382,9 +401,17 @@ public class UINavigationView extends LinearLayout {
 		this.mRightTextView.setTextColor(navigationTextColor);
 	}
 
+	public int getNavigationTextColor(){
+		return navigationTextColor;
+	}
+	
 	public void setTitleColor(int titleColor) {
 		this.titleColor = titleColor;
 		this.mTitleTextView.setTextColor(titleColor);
+	}
+	
+	public int getTitleColor(){
+		return titleColor;
 	}
 
 	public void hideStatusBar(){
@@ -404,6 +431,8 @@ public class UINavigationView extends LinearLayout {
 		mActionBar.setVisibility(View.VISIBLE);
 		mLine.setVisibility(View.VISIBLE);
 	}
+	
+	
 	
 	private Handler handler = new Handler();
 	private SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
