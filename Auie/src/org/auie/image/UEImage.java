@@ -185,6 +185,13 @@ public class UEImage {
 	/**
 	 * 生成图片
 	 */
+	public static ShapeDrawable createBackground(int color, float radius){
+		return createBackground(color, 255, radius);
+	}
+	
+	/**
+	 * 生成图片
+	 */
 	public static ShapeDrawable createBackground(int color, int alpha, float radius){
 		float[] outerR = new float[] { radius, radius, radius, radius, radius, radius, radius, radius };
 		RoundRectShape roundRectShape = new RoundRectShape(outerR, null, null);
