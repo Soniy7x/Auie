@@ -109,6 +109,7 @@ public abstract class UENavigationActivity extends Activity implements OnClickLi
 	 */
 	private void readXML(int id){
 		String name;
+		String className = getClass().getSimpleName();
 		XmlResourceParser xrp = getResources().getXml(id);
 		try {
 			while(xrp.getEventType() != XmlResourceParser.END_DOCUMENT){
@@ -128,6 +129,9 @@ public abstract class UENavigationActivity extends Activity implements OnClickLi
 					}
 					if (name.equals("NavigationTextColor")) {
 						mNavigationView.setNavigationTextColor(xrp.getAttributeIntValue(0, mNavigationView.getNavigationTextColor()));
+					}
+					if (name.equals("Title") && xrp.getAttributeValue(0).equals(className)) {
+						mNavigationView.setTitle(xrp.getAttributeValue(1));
 					}
 				}
 				xrp.next();
@@ -365,6 +369,19 @@ public abstract class UENavigationActivity extends Activity implements OnClickLi
 	 */
 	public void startActivity(Class<?> clazz, boolean isClose){
 		startActivity(new Intent(this, clazz));
+		if (isClose) {
+			finish();
+		}
+	}
+	
+
+	/**
+	 * 简单跳转Activity方法
+	 * @param intent 将要跳转的目的地
+	 * @param isClose 完成后是否关闭此类
+	 */
+	public void startActivity(Intent intent, boolean isClose){
+		startActivity(intent);
 		if (isClose) {
 			finish();
 		}

@@ -83,6 +83,18 @@ public abstract class UEActivity extends Activity implements OnClickListener{
 	}
 	
 	/**
+	 * 简单跳转Activity方法
+	 * @param intent 将要跳转的目的地
+	 * @param isClose 完成后是否关闭此类
+	 */
+	public void startActivity(Intent intent, boolean isClose){
+		startActivity(intent);
+		if (isClose) {
+			finish();
+		}
+	}
+	
+	/**
 	 * 初始化完成方法，必须实现
 	 */
 	protected abstract void initializeFinish();
