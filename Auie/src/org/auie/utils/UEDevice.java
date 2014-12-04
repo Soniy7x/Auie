@@ -19,6 +19,18 @@ public final class UEDevice {
 	private UEDevice(){}
 	
 	/**
+	 * 获取屏幕高度
+	 */
+	public static int getScreenHeight(Context context){
+		DisplayMetrics dm = null;
+		dm = context.getResources().getDisplayMetrics();
+		if (dm == null) {
+			return -1;
+		}
+		return dm.heightPixels;
+	}
+	
+	/**
 	 * 获取屏幕分辨率
 	 */
 	public static int getDeviceScreen(Context context){
