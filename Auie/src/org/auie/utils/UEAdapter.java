@@ -56,6 +56,11 @@ public abstract class UEAdapter implements ListAdapter, SpinnerAdapter {
 		notifyDataSetChanged();
 	}
 	
+	public void refresh(int position, Object data){
+		this.datas.set(position, data);
+		notifyDataSetChanged();
+	}
+	
 	public void reset(){
 		this.datas.clear();
 		this.datas = bckupDatas;
