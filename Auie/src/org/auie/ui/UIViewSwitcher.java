@@ -1,12 +1,14 @@
 package org.auie.ui;
 
 import org.auie.utils.UEMethod;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -149,6 +151,9 @@ public class UIViewSwitcher extends LinearLayout {
 		textView.setTextSize(tabTextSize);
 		textView.setTextColor(tabTextColor);
 		textView.setSingleLine();
+		if (TextUtils.isEmpty(title)) {
+			textView.setVisibility(View.GONE);
+		}
 		
 		RelativeLayout.LayoutParams params3 = new RelativeLayout.LayoutParams(UEMethod.dp2px(getContext(), 10), UEMethod.dp2px(getContext(), 10));
 		params3.addRule(RelativeLayout.RIGHT_OF, 1);

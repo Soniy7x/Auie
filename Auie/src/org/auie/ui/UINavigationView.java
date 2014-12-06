@@ -176,9 +176,9 @@ public class UINavigationView extends LinearLayout {
 		mActionBar.setBackgroundColor(navigationBarBackgroundColor);
 		mActionBar.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, UEDevice.getDeviceScreen(getContext()) < UEDevice.SCREEN_720P ? 38 * DP : 48 * DP));
 		
-		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, 24 * DP);
+		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(24 * DP, 24 * DP);
 		params2.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-		params2.setMargins(7 * DP, 0, 0, 0);
+		params2.setMargins(18 * DP, 0, 6 * DP, 0);
 		mLeftImageView = new ImageView(getContext());
 		mLeftImageView.setLayoutParams(params2);
 		mLeftImageView.setId(1992);
@@ -189,13 +189,13 @@ public class UINavigationView extends LinearLayout {
 		params3.addRule(RelativeLayout.RIGHT_OF, 1992);
 		mLeftTextView = new TextView(getContext());
 		mLeftTextView.setLayoutParams(params3);
-		mLeftTextView.setTextSize(18);
+		mLeftTextView.setTextSize(16);
 		mLeftTextView.setTextColor(navigationTextColor);
 		
-		RelativeLayout.LayoutParams params12 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, 24 * DP);
+		RelativeLayout.LayoutParams params12 = new RelativeLayout.LayoutParams(24 * DP, 24 * DP);
 		params12.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
 		params12.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-		params12.setMargins(0, 0, 7 * DP, 0);
+		params12.setMargins(6 * DP, 0, 18 * DP, 0);
 		mRightImageView = new ImageView(getContext());
 		mRightImageView.setLayoutParams(params12);
 		mRightImageView.setId(1996);
@@ -206,7 +206,7 @@ public class UINavigationView extends LinearLayout {
 		params11.addRule(RelativeLayout.LEFT_OF, 1996);
 		mRightTextView = new TextView(getContext());
 		mRightTextView.setLayoutParams(params11);
-		mRightTextView.setTextSize(18);
+		mRightTextView.setTextSize(16);
 		mRightTextView.setTextColor(navigationTextColor);
 		
 		RelativeLayout.LayoutParams params4 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);

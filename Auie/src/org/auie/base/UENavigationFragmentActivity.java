@@ -17,6 +17,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.XmlResourceParser;
+import android.graphics.Typeface;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
@@ -372,6 +373,13 @@ public abstract class UENavigationFragmentActivity extends FragmentActivity impl
 		}
 	}
 	
+	/**
+	 * 自定义字体方法
+	 * @param typeface 自定义字体
+	 */
+	protected void initializeFont(Typeface typeface) {
+		UEAnnotationManager.getInstance().initializeFont(activity, typeface);
+	}
 
 	/**
 	 * 简单跳转Activity方法

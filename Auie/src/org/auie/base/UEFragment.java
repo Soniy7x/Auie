@@ -97,6 +97,10 @@ public abstract class UEFragment extends Fragment implements OnClickListener{
 		}
 	}
 	
+	/**
+	 * 自定义菜单点击事件
+	 */
+	public void onMenuClick(int which){}
 
 	/**
 	 * 简单跳转Activity方法

@@ -27,6 +27,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -45,6 +47,7 @@ public class UILetterIndexView extends RelativeLayout {
 	private UILetterIndexAdapter adapter;
 	private List<String> indexDatas;
 	private List<ItemModel> models;
+	private OnItemClickListener onItemClickListener;
 	private PinyinComparator comparator = new PinyinComparator();
 	
 	public UILetterIndexView(Context context) {
@@ -87,6 +90,15 @@ public class UILetterIndexView extends RelativeLayout {
 		mListView.setVerticalScrollBarEnabled(false);
 		mListView.setLayoutParams(params1);
 		mListView.setOnScrollListener(scrollListener);
+		mListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				if (onItemClickListener != null) {
+					onItemClickListener.onItemClick(parent, view, position, id);
+				}
+			}
+		});
 		
 		int textViewSize = UEMethod.dp2px(getContext(), 80);
 		LayoutParams params = new LayoutParams(textViewSize, textViewSize);
@@ -134,6 +146,10 @@ public class UILetterIndexView extends RelativeLayout {
         return shapeDrawable;
 	}
 
+	public void setOnItemClickListener(OnItemClickListener listener){
+		this.onItemClickListener = listener;
+	}
+	
 	private TextWatcher textWatcher = new TextWatcher() {
 		
 		@Override

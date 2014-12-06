@@ -98,6 +98,8 @@ public class UIBatteryView extends View {
 			this.status = status;
 			if (status == STATUS_CHARGED) {
 				mHandler.post(mRunnable);
+			}else if (status == STATUS_COMLETED) {
+				setLevel(100);
 			}
 		}
 	}

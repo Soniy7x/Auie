@@ -31,7 +31,7 @@ public abstract class UEHttpListener implements UEResponseListener{
 	
 	protected void onSuccess(InputStream response){};
 	
-	protected abstract void onSuccess(String response);
+	protected void onSuccess(String response){};
 
 	protected abstract void onFailure(Throwable e);
 	
