@@ -28,12 +28,11 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
 
 public abstract class UENavigationFragmentActivity extends FragmentActivity implements OnClickListener{
 
@@ -64,14 +63,13 @@ public abstract class UENavigationFragmentActivity extends FragmentActivity impl
 	 * 初始化开始方法
 	 * (Initialization begins)
 	 */
-	@SuppressWarnings("deprecation")
 	private void initializeBegin() {
 		wifiFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		mNavigationView = new UINavigationView(this);
 		mNavigationView.setNetworkText(UEDevice.getNetworkType(activity));
 		mTelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		mTelephonyManager.listen(mSingalListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-		addContentView(mNavigationView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		setContentView(mNavigationView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		if (getClass().isAnnotationPresent(UELayout.class)) {
 			int layout = -1;
 			UELayout initialization = getClass().getAnnotation(UELayout.class);
@@ -88,9 +86,6 @@ public abstract class UENavigationFragmentActivity extends FragmentActivity impl
 				}
 			}
 			View view = LayoutInflater.from(activity).inflate(layout, mNavigationView, false);
-			LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();
-			params.height = getWindowManager().getDefaultDisplay().getHeight() - (int) mNavigationView.getNavigationHeight();
-			view.setLayoutParams(params);
 			mNavigationView.addView(view);
 		}
 		if (getClass().isAnnotationPresent(UEConfig.class)) {
