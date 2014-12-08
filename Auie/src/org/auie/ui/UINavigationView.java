@@ -236,11 +236,18 @@ public class UINavigationView extends LinearLayout {
 	}
 	
 	public int getNavigationHeight(){
-		if (UEDevice.getDeviceScreen(getContext()) >= UEDevice.SCREEN_720P) {
-			return 73 * DP;
-		}else {
-			return 63 * DP;
+		int height = 0;
+		if (mStatus.getVisibility() == VISIBLE) {
+			height += 24;
 		}
+		if (mActionBar.getVisibility() == VISIBLE) {
+			if (UEDevice.getDeviceScreen(getContext()) >= UEDevice.SCREEN_720P) {
+				height += 49;
+			}else {
+				height += 39;
+			}
+		}
+		return height;
 	}
 	
 	public void setLeftImageOnClickListener(OnClickListener mListener){
