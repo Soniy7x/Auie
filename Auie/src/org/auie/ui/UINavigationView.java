@@ -176,9 +176,9 @@ public class UINavigationView extends LinearLayout {
 		mActionBar.setBackgroundColor(navigationBarBackgroundColor);
 		mActionBar.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, UEDevice.getDeviceScreen(getContext()) < UEDevice.SCREEN_720P ? 38 * DP : 48 * DP));
 		
-		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(24 * DP, 24 * DP);
+		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		params2.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-		params2.setMargins(18 * DP, 0, 6 * DP, 0);
+		params2.setMargins(12 * DP, 0, 6 * DP, 0);
 		mLeftImageView = new ImageView(getContext());
 		mLeftImageView.setLayoutParams(params2);
 		mLeftImageView.setId(1992);
@@ -192,10 +192,10 @@ public class UINavigationView extends LinearLayout {
 		mLeftTextView.setTextSize(16);
 		mLeftTextView.setTextColor(navigationTextColor);
 		
-		RelativeLayout.LayoutParams params12 = new RelativeLayout.LayoutParams(24 * DP, 24 * DP);
+		RelativeLayout.LayoutParams params12 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		params12.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
 		params12.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-		params12.setMargins(6 * DP, 0, 18 * DP, 0);
+		params12.setMargins(6 * DP, 0, 12 * DP, 0);
 		mRightImageView = new ImageView(getContext());
 		mRightImageView.setLayoutParams(params12);
 		mRightImageView.setId(1996);
