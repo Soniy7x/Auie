@@ -124,7 +124,7 @@ public class UIListView extends ListView implements OnScrollListener{
 		
 		headerView = new HeaderView(getContext());
 		headerViewContent = headerView.mContent;
-		addHeaderView(headerView);
+		super.addHeaderView(headerView);
 		
 		footerView = new FooterView(getContext());
 
@@ -389,7 +389,7 @@ public class UIListView extends ListView implements OnScrollListener{
 	public void setAdapter(ListAdapter adapter) {
 		if (isFooterReady == false) {
 			isFooterReady = true;
-			addFooterView(footerView);
+			super.addFooterView(footerView);
 		}
 		super.setAdapter(new UIListAdapter(adapter) {
 			@Override
@@ -543,6 +543,22 @@ public class UIListView extends ListView implements OnScrollListener{
 	public void setOnItemLongClickListener(
 			OnItemLongClickListener onItemLongClickListener) {
 		this.onItemLongClickListener = onItemLongClickListener;
+	}
+	
+	@Override
+	public void addHeaderView(View v) {
+		if (headerView != null) {
+			super.removeHeaderView(headerView);
+		}
+		super.addHeaderView(v);
+	}
+
+	@Override
+	public void addFooterView(View v) {
+		if (footerView != null) {
+			super.removeFooterView(footerView);
+		}
+		super.addFooterView(v);
 	}
 
 	@Override
