@@ -32,7 +32,7 @@ public class UIEditText extends EditText {
 	public static final int TYPE_CIRCLE = 4;
 	
 	private static final int DEFAULT_STROKECOLOR = Color.parseColor("#009EFC");
-	private static final int DEFAULT_UNSTROKEOLOR = Color.parseColor("#FFFFFF");
+	private static final int DEFAULT_UNSTROKEOLOR = Color.parseColor("#CC808080");
 	private static final int DEFAULT_CLEARCOLOR = Color.parseColor("#CC808080");
 	private static final int DEFAULT_CLEARCENTERCOLOR = UEHtmlColor.WHITE;
 	
