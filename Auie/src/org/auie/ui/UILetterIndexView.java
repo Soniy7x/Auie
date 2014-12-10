@@ -215,6 +215,10 @@ public class UILetterIndexView extends RelativeLayout {
 	public List<String> getIndexDatas() {
 		return indexDatas;
 	}
+	
+	public List<ItemModel> getModelDatas() {
+		return models;
+	}
 
 	public List<Model> itemModelToModel(List<String> indexDatas){
 		List<Model> models = new ArrayList<>();
@@ -264,7 +268,7 @@ public class UILetterIndexView extends RelativeLayout {
 		return mItemModels;
 	}
 	
-	class ItemModel extends Model{
+	public class ItemModel extends Model{
 		public String index;
 		public String indexName;
 		public String letters;
