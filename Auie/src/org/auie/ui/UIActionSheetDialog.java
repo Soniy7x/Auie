@@ -33,6 +33,9 @@ import android.widget.TextView;
  */
 public class UIActionSheetDialog extends PopupWindow{
 	
+	public static final int TYPE_IOS = 0;
+	public static final int TYPE_ANDROID = 1;
+	
 	private Context context;
 	private String title;
 	private Typeface typeface;
@@ -46,7 +49,9 @@ public class UIActionSheetDialog extends PopupWindow{
 	private int DP = 0;
 	private int WIDTH = 0;
 	private int HEIGHT = 0;
-	private int backgroundColor = Color.parseColor("#00000000");
+	private int type = TYPE_IOS;
+	private int backgroundColor = Color.parseColor("#FFFFFF");
+	private int itemBackgroundColor = Color.parseColor("#FFFFFF");
 	private int titleColor = Color.parseColor("#8F8F8F");
 	private int cancelColor = Color.parseColor("#3DB399");
 
@@ -64,11 +69,11 @@ public class UIActionSheetDialog extends PopupWindow{
 	}
 	
 	/**
-	 * 构建内容视图
+	 * 构建内容视图 - IOS
 	 * @return 内容视图
 	 */
 	@SuppressWarnings("deprecation")
-	private View createContentView(){
+	private View createContentViewForIOS(){
 		//根布局
 		rootLayout = new LinearLayout(context);
 		rootLayout.setLayoutParams(getParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -79,7 +84,7 @@ public class UIActionSheetDialog extends PopupWindow{
 		parentLayout = new LinearLayout(context);
 		parentLayout.setLayoutParams(getParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 		parentLayout.setOrientation(LinearLayout.VERTICAL);
-		parentLayout.setBackgroundColor(backgroundColor);
+		parentLayout.setBackgroundColor(Color.parseColor("#00000000"));
 		
 		LinearLayout childLayout = new LinearLayout(context);
 		LayoutParams childParams = getParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -95,7 +100,7 @@ public class UIActionSheetDialog extends PopupWindow{
 		titleTextView.setMinHeight(45 * DP);
 		titleTextView.setTextSize(14);
 		titleTextView.setGravity(Gravity.CENTER);
-		titleTextView.setTextColor(titleColor);
+		titleTextView.setTextColor(Color.parseColor("#8F8F8F"));
 		if (title == null) {
 			titleTextView.setVisibility(View.GONE);
 		}else{
@@ -119,11 +124,89 @@ public class UIActionSheetDialog extends PopupWindow{
 		LayoutParams params = getParams(LayoutParams.MATCH_PARENT, 45 * DP);
 		params.setMargins(8 * DP, 8 * DP, 8 * DP, 8 * DP);
 		cancelTextView.setLayoutParams(params);
-		cancelTextView.setTextColor(cancelColor);
+		cancelTextView.setTextColor(Color.parseColor("#3DB399"));
 		cancelTextView.setTextSize(16);
 		cancelTextView.setGravity(Gravity.CENTER);
 		cancelTextView.setText("取消");
 		cancelTextView.setBackgroundDrawable(UEImage.createBackground(Color.WHITE, 204, 10));
+		cancelTextView.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				dismiss();
+			}
+		});
+		
+		//控件创建结束
+		childLayout.addView(titleTextView);
+		childLayout.addView(sheetLayout);
+		parentLayout.addView(childLayout);
+		parentLayout.addView(cancelTextView);
+		rootLayout.addView(parentLayout);
+		if (typeface != null) {
+			titleTextView.setTypeface(typeface);
+			cancelTextView.setTypeface(typeface);
+		}
+		return rootLayout;
+	}
+	
+	/**
+	 * 构建内容视图 - ANDROID
+	 * @return 内容视图
+	 */
+	private View createContentViewForANDROID(){
+		//根布局
+		rootLayout = new LinearLayout(context);
+		rootLayout.setLayoutParams(getParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		rootLayout.setOrientation(LinearLayout.VERTICAL);
+		rootLayout.setBackgroundColor(Color.parseColor("#55000000"));
+		rootLayout.setGravity(Gravity.BOTTOM);
+		
+		parentLayout = new LinearLayout(context);
+		parentLayout.setLayoutParams(getParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		parentLayout.setOrientation(LinearLayout.VERTICAL);
+		parentLayout.setBackgroundColor(backgroundColor);
+		
+		LinearLayout childLayout = new LinearLayout(context);
+		LayoutParams childParams = getParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		childLayout.setLayoutParams(childParams);
+		childLayout.setOrientation(LinearLayout.VERTICAL);
+		
+		//标题
+		TextView titleTextView = new TextView(context);
+		titleTextView.setLayoutParams(getParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		titleTextView.setMinHeight(48 * DP);
+		titleTextView.setTextSize(12);
+		titleTextView.setGravity(Gravity.CENTER);
+		titleTextView.setTextColor(titleColor);
+		if (title == null) {
+			titleTextView.setVisibility(View.GONE);
+		}else{
+			titleTextView.setVisibility(View.VISIBLE);
+			titleTextView.setText(title);
+		}
+		
+		//内容外层布局
+		sheetLayout = new ScrollView(context);
+		sheetLayout.setLayoutParams(getParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		sheetLayout.setFadingEdgeLength(0);
+		
+		//内容内层布局
+		contentLayout = new LinearLayout(context);
+		contentLayout.setLayoutParams(getParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		contentLayout.setOrientation(LinearLayout.VERTICAL);
+		sheetLayout.addView(contentLayout);
+		
+		//取消按钮
+		final TextView cancelTextView = new TextView(context);
+		LayoutParams params = getParams(LayoutParams.MATCH_PARENT, 52 * DP);
+		params.setMargins(0, 8 * DP, 0, 0);
+		cancelTextView.setLayoutParams(params);
+		cancelTextView.setTextColor(cancelColor);
+		cancelTextView.setTextSize(16);
+		cancelTextView.setGravity(Gravity.CENTER);
+		cancelTextView.setText("取消");
+		cancelTextView.setBackgroundColor(itemBackgroundColor);
 		cancelTextView.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -152,13 +235,21 @@ public class UIActionSheetDialog extends PopupWindow{
 	@SuppressWarnings("deprecation")
 	private UIActionSheetDialog builder() {
 		setBackgroundDrawable(new BitmapDrawable());
-		setContentView(createContentView());
+		if (type == 0) {
+			setContentView(createContentViewForIOS());
+		}else {
+			setContentView(createContentViewForANDROID());
+		}
 		setWidth(WIDTH);
 		setHeight(android.view.ViewGroup.LayoutParams.MATCH_PARENT);
 		setFocusable(true);
 		return this;
 	}
-	
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
 	/**
 	 * 根据宽高获得参数
 	 * @param width 宽
@@ -235,8 +326,12 @@ public class UIActionSheetDialog extends PopupWindow{
 			}
 
 			textView.setTextColor(color);
-
-			textView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 45 * DP));
+			if (type == TYPE_ANDROID) {
+				textView.setBackgroundColor(itemBackgroundColor);				
+				textView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 52 * DP));
+			}else {
+				textView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 45 * DP));
+			}
 
 			textView.setOnClickListener(new OnClickListener() {
 				@Override
@@ -302,9 +397,9 @@ public class UIActionSheetDialog extends PopupWindow{
 	}
 
 	public class SheetItem {
+		int color;
 		String name;
 		OnSheetItemClickListener itemClickListener;
-		int color;
 
 		public SheetItem(String name, int color, OnSheetItemClickListener itemClickListener) {
 			this.name = name;
