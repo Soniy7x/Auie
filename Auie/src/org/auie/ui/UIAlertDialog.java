@@ -29,6 +29,7 @@ public class UIAlertDialog{
     private String title = "标题文字可使用setTitle()设置";
     private String cancelTitle = "取消";
     private String actionTitle = "执行";
+    private boolean canceledOnTouchOutside = true;
     private Context context;
     private AlertDialog dialog;
     private Typeface typeface;
@@ -161,7 +162,7 @@ public class UIAlertDialog{
         lineHorizontal.setBackgroundColor(lineHorizontalColor);
         LinearLayout buttonLayout  = new LinearLayout(context);
         if (UEDevice.getDeviceScreen(context) >= UEDevice.SCREEN_720P) {
-        	buttonLayout.setLayoutParams(getParams(MATCH_PARENT, dp2px(48f)));		
+        	buttonLayout.setLayoutParams(getParams(MATCH_PARENT, dp2px(52f)));		
 		}else {
 			buttonLayout.setLayoutParams(getParams(MATCH_PARENT, dp2px(40f)));		
 		}
@@ -213,6 +214,7 @@ public class UIAlertDialog{
             cancelButton.setTypeface(typeface);
             actionButton.setTypeface(typeface);
         }
+        dialog.setCanceledOnTouchOutside(canceledOnTouchOutside);
         dialog.show();
         dialog.setContentView(windowLayout);
     }
@@ -230,4 +232,12 @@ public class UIAlertDialog{
             dialog.dismiss();
         }
     }
+
+	public boolean isCanceledOnTouchOutside() {
+		return canceledOnTouchOutside;
+	}
+
+	public void setCanceledOnTouchOutside(boolean canceledOnTouchOutside) {
+		this.canceledOnTouchOutside = canceledOnTouchOutside;
+	}
 }
