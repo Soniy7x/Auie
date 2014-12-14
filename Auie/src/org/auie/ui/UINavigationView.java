@@ -9,6 +9,7 @@ import org.auie.utils.UEDevice;
 import org.auie.utils.UEMethod;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -34,6 +35,8 @@ public class UINavigationView extends LinearLayout {
 	
 	private RelativeLayout mStatus;
 	private RelativeLayout mActionBar;
+	private RelativeLayout mLeftActionView;
+	private RelativeLayout mRightActionView;
 	
 	private TextView mTimeTextView;
 	private TextView mTitleTextView;
@@ -176,6 +179,14 @@ public class UINavigationView extends LinearLayout {
 		mActionBar.setBackgroundColor(navigationBarBackgroundColor);
 		mActionBar.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, UEDevice.getDeviceScreen(getContext()) < UEDevice.SCREEN_720P ? 38 * DP : 48 * DP));
 		
+		mLeftActionView = new RelativeLayout(getContext());
+		mLeftActionView.setLayoutParams(new RelativeLayout.LayoutParams(100 * DP, -1));
+		
+		RelativeLayout.LayoutParams params0 = new RelativeLayout.LayoutParams(new LayoutParams(100 * DP, -1));
+		params0.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+		mRightActionView = new RelativeLayout(getContext());
+		mRightActionView.setLayoutParams(params0);
+		
 		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		params2.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
 		params2.setMargins(12 * DP, 0, 6 * DP, 0);
@@ -216,11 +227,14 @@ public class UINavigationView extends LinearLayout {
 		mTitleTextView.setTextSize(20);
 		mTitleTextView.setTextColor(titleColor);
 		
-		mActionBar.addView(mLeftImageView);
-		mActionBar.addView(mRightImageView);
-		mActionBar.addView(mLeftTextView);
+		mLeftActionView.addView(mLeftImageView);
+		mLeftActionView.addView(mLeftTextView);
+		mRightActionView.addView(mRightImageView);
+		mRightActionView.addView(mRightTextView);
+		
+		mActionBar.addView(mLeftActionView);
 		mActionBar.addView(mTitleTextView);
-		mActionBar.addView(mRightTextView);
+		mActionBar.addView(mRightActionView);
 
 		mLine = new View(getContext());
 		mLine.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, DP));
@@ -250,17 +264,17 @@ public class UINavigationView extends LinearLayout {
 		return height;
 	}
 	
-	public void setLeftImageOnClickListener(OnClickListener mListener){
-		mLeftImageView.setOnClickListener(mListener);
-	}
-	
-	public void setLeftTextOnClickListener(OnClickListener mListener){
-		mLeftTextView.setOnClickListener(mListener);
-	}
-	
 	public void setLeftOnClickListener(OnClickListener mListener){
-		mLeftImageView.setOnClickListener(mListener);
-		mLeftTextView.setOnClickListener(mListener);
+		mLeftActionView.setOnClickListener(mListener);
+	}
+	
+	public void setLeftDefaultOnClickListener(final Activity activity){
+		mLeftActionView.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				activity.finish();
+			}
+		});
 	}
 	
 	public void setLeftImageResource(int resId) {
@@ -272,8 +286,7 @@ public class UINavigationView extends LinearLayout {
 	}
 	
 	public void setRightOnClickListener(OnClickListener mListener){
-		mRightImageView.setOnClickListener(mListener);
-		mRightTextView.setOnClickListener(mListener);
+		mRightActionView.setOnClickListener(mListener);
 	}
 	
 	public void setRightImageResource(int resId) {

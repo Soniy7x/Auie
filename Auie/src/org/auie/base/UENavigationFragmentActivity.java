@@ -163,17 +163,13 @@ public abstract class UENavigationFragmentActivity extends FragmentActivity impl
 	protected void setTitle(String title){
 		mNavigationView.setTitle(title);
 	}
-	
-	public void setLeftImageOnClickListener(OnClickListener mListener){
-		mNavigationView.setLeftImageOnClickListener(mListener);
-	}
-	
-	public void setLeftTextOnClickListener(OnClickListener mListener){
-		mNavigationView.setLeftTextOnClickListener(mListener);
-	}
-	
+
 	public void setLeftOnClickListener(OnClickListener mListener){
 		mNavigationView.setLeftOnClickListener(mListener);
+	}
+	
+	public void setLeftDefaultOnClickListener(Activity activity){
+		mNavigationView.setLeftDefaultOnClickListener(activity);
 	}
 	
 	public void setRightOnClickListener(OnClickListener mListener){
