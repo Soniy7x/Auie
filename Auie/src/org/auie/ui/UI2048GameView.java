@@ -16,7 +16,6 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.TranslateAnimation;
@@ -65,9 +64,9 @@ public class UI2048GameView extends GridLayout {
 	private void init(){
 		setColumnCount(4);
 		try{
-			setBackground(UEImage.createBackground(((ColorDrawable) getBackground()).getColor(), 5));			
+			setBackgroundColor(((ColorDrawable) getBackground()).getColor());			
 		}catch(Exception e){			
-			setBackground(UEImage.createBackground(DEFAULT_BACKGROUND, 5));
+			setBackgroundColor(DEFAULT_BACKGROUND);
 		}
 		setOnTouchListener(onTouchListener);
 		getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
@@ -76,10 +75,6 @@ public class UI2048GameView extends GridLayout {
 			public boolean onPreDraw() {
 				int w = getWidth();
 				int h = getHeight();
-				ViewGroup.LayoutParams params = getLayoutParams();
-				params.height = Math.min(w, h);
-				params.width  = Math.min(w, h);
-				setLayoutParams(params);
 				cardSize = (Math.min(w, h) - cardDistance)/4;
 				initCards();
 				startGame();

@@ -18,15 +18,11 @@ import android.graphics.Paint;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.Build;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
@@ -39,7 +35,6 @@ import android.widget.TextView;
 @TargetApi(Build.VERSION_CODES.L)
 public class UILetterIndexView extends RelativeLayout {
 	
-	private UIEditText mEdittText;
 	private ListView mListView;
 	private TextView mTextView;
 	private UIIndexBar mIndexBar;
@@ -72,16 +67,6 @@ public class UILetterIndexView extends RelativeLayout {
 
 	private void createView(){
 		
-		LayoutParams mEditTextParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-		mEditTextParams.setMargins(UEMethod.dp2px(getContext(), 16), 0, UEMethod.dp2px(getContext(), 16), 0);
-		mEdittText = new UIEditText(getContext());
-		mEdittText.setLayoutParams(mEditTextParams);
-		mEdittText.setId(27);
-		mEdittText.setType(UIEditText.TYPE_CIRCLE);
-		mEdittText.setGravity(Gravity.CENTER);
-		mEdittText.setHint("请输入检索内容");
-		mEdittText.addTextChangedListener(textWatcher);
-		
 		LayoutParams params1 = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		params1.addRule(BELOW, 27);
 		mListView = new ListView(getContext());
@@ -89,7 +74,6 @@ public class UILetterIndexView extends RelativeLayout {
 		mListView.setDivider(null);
 		mListView.setVerticalScrollBarEnabled(false);
 		mListView.setLayoutParams(params1);
-		mListView.setOnScrollListener(scrollListener);
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -129,7 +113,6 @@ public class UILetterIndexView extends RelativeLayout {
 		});
 		
 		addView(mListView);
-		addView(mEdittText);
 		addView(mTextView);
 		addView(mIndexBar);
 		
@@ -148,68 +131,6 @@ public class UILetterIndexView extends RelativeLayout {
 
 	public void setOnItemClickListener(OnItemClickListener listener){
 		this.onItemClickListener = listener;
-	}
-	
-	private TextWatcher textWatcher = new TextWatcher() {
-		
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before, int count) {
-			filterDatas(s.toString());
-		}
-		
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-		
-		@Override
-		public void afterTextChanged(Editable s) {}
-	};
-	
-	private OnScrollListener scrollListener = new OnScrollListener() {
-		
-		@Override
-		public void onScrollStateChanged(AbsListView view, int scrollState) {
-			switch (scrollState) {
-			case SCROLL_STATE_IDLE:
-				if (mListView.getFirstVisiblePosition() == 0) {
-					LayoutParams params = (LayoutParams) mListView.getLayoutParams();
-					params.removeRule(ALIGN_PARENT_TOP);
-					params.addRule(BELOW, 27);
-					mListView.setLayoutParams(params);
-					mEdittText.setAlpha(1f);
-				}
-				break;
-
-			default:
-				LayoutParams params = (LayoutParams) mListView.getLayoutParams();
-				params.removeRule(BELOW);
-				params.addRule(ALIGN_PARENT_TOP, TRUE);
-				mListView.setLayoutParams(params);
-				mEdittText.setAlpha(0f);
-				break;
-			}
-		}
-		
-		@Override
-		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-			
-		}
-	};
-	
-	private void filterDatas(String key){
-		List<ItemModel> filterModels = new ArrayList<ItemModel>();
-		if (TextUtils.isEmpty(key)) {
-			filterModels = models;
-		}else {
-			for(ItemModel model : models){
-				String content = model.indexName;
-				String letters = model.letters;
-				if (content.toLowerCase(Locale.getDefault()).startsWith(key) || letters.startsWith(key.toUpperCase(Locale.getDefault()))) {
-					filterModels.add(model);
-				}
-			}
-		}
-		Collections.sort(filterModels, comparator);
-		adapter.updateListView(filterModels);
 	}
 	
 	public List<String> getIndexDatas() {
@@ -257,11 +178,15 @@ public class UILetterIndexView extends RelativeLayout {
 			mItemModel.content = model.content;
 			mItemModel.indexName = model.index;
 			mItemModel.letters = UEPinyin.transformPinYin(mItemModel.indexName);
-			String pinyin = mItemModel.letters.substring(0, 1);
-			if (pinyin.matches("[A-Z]")) {
-				mItemModel.index = pinyin;
+			if (model.extra) {
+				mItemModel.index = "*";
 			}else {
-				mItemModel.index = "#";
+				String pinyin = mItemModel.letters.substring(0, 1);
+				if (pinyin.matches("[A-Z]")) {
+					mItemModel.index = pinyin;
+				}else {
+					mItemModel.index = "#";
+				}
 			}
 			mItemModels.add(mItemModel);
 		}
@@ -277,12 +202,18 @@ public class UILetterIndexView extends RelativeLayout {
 	
 	public static class Model{
 		public String index;
+		public boolean extra;
 		public Object content;
 		
 		public Model(){}
 		
 		public Model(String index, Object content){
+			this(index, content, false);
+		}
+		
+		public Model(String index, Object content, boolean extra){
 			this.index = index;
+			this.extra = extra;
 			this.content = content;
 		}
 	}
@@ -290,9 +221,9 @@ public class UILetterIndexView extends RelativeLayout {
 	class PinyinComparator implements Comparator<ItemModel> {
 
 		public int compare(ItemModel o1, ItemModel o2) {
-			if (o1.index.equals("@") || o2.index.equals("#")) {
+			if (o1.index.equals("*")) {
 				return -1;
-			} else if (o1.index.equals("#") || o2.index.equals("@")) {
+			} else if (o1.index.equals("#")) {
 				return 1;
 			} else {
 				return o1.letters.compareTo(o2.letters);
@@ -344,6 +275,12 @@ public class UILetterIndexView extends RelativeLayout {
 			notifyDataSetChanged();
 		}
 		
+		public void updateListData(List<Model> models) throws UEIndexNotFoundException{
+			this.datas = transfromDatas(models);
+			Collections.sort(this.datas, comparator);
+			notifyDataSetChanged();
+		}
+		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ViewHolder viewHolder;
@@ -379,7 +316,7 @@ public class UILetterIndexView extends RelativeLayout {
 			}
 			ItemModel model = datas.get(position);
 			int section = getSectionForPosition(position);
-			if (position == getPositionForSection(section)) {
+			if (position == getPositionForSection(section) && !model.index.equals("*")) {
 				viewHolder.index.setVisibility(VISIBLE);
 				viewHolder.index.setText(model.index);
 				viewHolder.line.setVisibility(GONE);
@@ -433,6 +370,7 @@ public class UILetterIndexView extends RelativeLayout {
 
 		public void setDatas(List<ItemModel> datas) {
 			this.datas = datas;
+			notifyDataSetChanged();
 		}
 
 		public abstract View getContentView(int position, View contentView, ViewGroup parent);
