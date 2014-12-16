@@ -14,7 +14,6 @@ import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.widget.ScrollerCompat;
 import android.text.TextUtils;
@@ -23,14 +22,13 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.GestureDetector.OnGestureListener;
-import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -41,7 +39,6 @@ import android.widget.RelativeLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
 import android.widget.WrapperListAdapter;
-import android.widget.AbsListView.OnScrollListener;
 
 @SuppressLint("NewApi")
 public class UIListView extends ListView implements OnScrollListener{
@@ -116,6 +113,7 @@ public class UIListView extends ListView implements OnScrollListener{
 	private void init(){
 		
 		super.setOnScrollListener(this);
+		super.setLongClickable(true);
 		
 		this.mTouchState = TOUCH_STATE_NONE;
 		DISTANCE_X = UEMethod.dp2px(getContext(), DISTANCE_X);
@@ -391,7 +389,7 @@ public class UIListView extends ListView implements OnScrollListener{
 			isFooterReady = true;
 			super.addFooterView(footerView);
 		}
-		super.setAdapter(new UIListAdapter(adapter) {
+		super.setAdapter(new UIListAdapter(getContext(), adapter) {
 			@Override
 			public void createMenu(Menu menu) {
 				if (mItemControl != null) {
@@ -475,14 +473,13 @@ public class UIListView extends ListView implements OnScrollListener{
 			}
 			break;
 		case MotionEvent.ACTION_UP:
+		default:
 			if (mTouchState == TOUCH_STATE_X) {
 				onTouchHorizontal(ev);
 				ev.setAction(MotionEvent.ACTION_CANCEL);
 				super.onTouchEvent(ev);
 				return true;
 			}
-		default:
-			//TODO
 			if (getFirstVisiblePosition() == 0) {
 				if (isCanRefresh() && headerView.getVisiableHeight() > headerViewHeight) {
 					refreshing = true;
@@ -940,11 +937,13 @@ public class UIListView extends ListView implements OnScrollListener{
 	 */
 	protected class UIListAdapter implements WrapperListAdapter, OnMenuItemClickListener{
 
+		private Context context;
 		private ListAdapter mAdapter;
 		private OnMenuClickListener onMenuClickListener;
 		
-		public UIListAdapter(ListAdapter adapter) {
-			mAdapter = adapter;
+		public UIListAdapter(Context context, ListAdapter adapter) {
+			this.context = context;
+			this.mAdapter = adapter;
 		}
 		
 		@Override
@@ -987,7 +986,7 @@ public class UIListView extends ListView implements OnScrollListener{
 			MenuLayout menuLayout;
 			if (convertView == null) {
 				View contentView = mAdapter.getView(position, convertView, parent);
-				Menu menu = new Menu(getContext());
+				Menu menu = new Menu(context);
 				createMenu(menu);
 				MenuView menuView = new MenuView(menu);
 				menuView.setOnItemClickListener(this);
@@ -1174,16 +1173,16 @@ public class UIListView extends ListView implements OnScrollListener{
 		private static final int STATE_HIDE = 0;
 		private static final int STATE_SHOW = 1;
 		
-		private int MIN_FLING = UEMethod.dp2px(getContext(), 15);
-		private int MAX_VELOCITYX = UEMethod.dp2px(getContext(), 500);
+//		private int MIN_FLING = UEMethod.dp2px(getContext(), 15);
+//		private int MAX_VELOCITYX = UEMethod.dp2px(getContext(), 500);
 		
-		private GestureDetectorCompat mGestureDetector;
+//		private GestureDetectorCompat mGestureDetector;
 		private View mContentView;
 		private MenuView mMenuView;
 		private ScrollerCompat mShowScroller;
 		private ScrollerCompat mHideScroller;
 		
-		private boolean isFling;
+//		private boolean isFling;
 		private int baseX;
 		private int pressX;
 		private int position;
@@ -1203,7 +1202,7 @@ public class UIListView extends ListView implements OnScrollListener{
 			this.mMenuView = menuView;
 			this.mMenuView.setMenuLayout(this);
 			setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-			mGestureDetector = new GestureDetectorCompat(getContext(), mGestureListener);
+//			mGestureDetector = new GestureDetectorCompat(getContext(), mGestureListener);
 			LayoutParams contentParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 			mContentView.setLayoutParams(contentParams);
 			if (mContentView.getId() < 1) {
@@ -1233,11 +1232,11 @@ public class UIListView extends ListView implements OnScrollListener{
 		}
 
 		public boolean onSwipe(MotionEvent event) {
-			mGestureDetector.onTouchEvent(event);
+//			mGestureDetector.onTouchEvent(event);
 			switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
 				pressX = (int) event.getX();
-				isFling = false;
+//				isFling = false;
 				break;
 			case MotionEvent.ACTION_MOVE:
 				int dis = (int) (pressX - event.getX());
@@ -1247,7 +1246,10 @@ public class UIListView extends ListView implements OnScrollListener{
 				swipe(dis);
 				break;
 			case MotionEvent.ACTION_UP:
-				if (isFling || (pressX - event.getX()) > (mMenuView.getWidth() / 2)) {
+			case MotionEvent.ACTION_CANCEL:
+				//TODO 兼容Fragment
+//				if (isFling || (pressX - event.getX()) > (mMenuView.getWidth() / 2)) {
+				if ((pressX - event.getX()) > (mMenuView.getWidth() / 6)) {
 					smoothOpenMenu();
 				} else {
 					smoothCloseMenu();
@@ -1255,7 +1257,7 @@ public class UIListView extends ListView implements OnScrollListener{
 				}
 				break;
 			}
-			return true;
+			return super.onTouchEvent(event);
 		}
 		
 		@Override
@@ -1340,21 +1342,21 @@ public class UIListView extends ListView implements OnScrollListener{
 			mMenuView.setPosition(position);
 		}
 
-		private OnGestureListener mGestureListener = new SimpleOnGestureListener() {
-			@Override
-			public boolean onDown(MotionEvent e) {
-				isFling = false;
-				return true;
-			}
-
-			@Override
-			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-				if ((e1.getX() - e2.getX()) > MIN_FLING && velocityX < MAX_VELOCITYX) {
-					isFling = true;
-				}
-				return super.onFling(e1, e2, velocityX, velocityY);
-			}
-		};
+//		private OnGestureListener mGestureListener = new SimpleOnGestureListener() {
+//			@Override
+//			public boolean onDown(MotionEvent e) {
+//				isFling = false;
+//				return true;
+//			}
+//
+//			@Override
+//			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+//				if ((e1.getX() - e2.getX()) > MIN_FLING && velocityX < MAX_VELOCITYX) {
+//					isFling = true;
+//				}
+//				return super.onFling(e1, e2, velocityX, velocityY);
+//			}
+//		};
 	}
 	
 	public static class Menu{
@@ -1413,49 +1415,55 @@ public class UIListView extends ListView implements OnScrollListener{
 		public String getTitle() {
 			return title;
 		}
-		public void setTitle(String title) {
+		public Item setTitle(String title) {
 			this.title = title;
+			return this;
 		}
 
 		public Drawable getIcon() {
 			return icon;
 		}
 
-		public void setIcon(Drawable icon) {
+		public Item setIcon(Drawable icon) {
 			this.icon = icon;
+			return this;
 		}
 
 		public int getTitleColor() {
 			return titleColor;
 		}
 
-		public void setTitleColor(int titleColor) {
+		public Item setTitleColor(int titleColor) {
 			this.titleColor = titleColor;
+			return this;
 		}
 
 		public int getTitleSize() {
 			return titleSize;
 		}
 
-		public void setTitleSize(int titleSize) {
+		public Item setTitleSize(int titleSize) {
 			this.titleSize = titleSize;
+			return this;
 		}
 
 		public int getBackgroundColor() {
 			return backgroundColor;
 		}
 
-		public void setBackgroundColor(int backgroundColor) {
+		public Item setBackgroundColor(int backgroundColor) {
 			this.backgroundColor = backgroundColor;
 			this.titleColor = COLOR_WHITE;
+			return this;
 		}
 
 		public Typeface getTypeface() {
 			return typeface;
 		}
 
-		public void setTypeface(Typeface typeface) {
+		public Item setTypeface(Typeface typeface) {
 			this.typeface = typeface;
+			return this;
 		}
 	
 	}
