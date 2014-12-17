@@ -854,16 +854,16 @@ public class UIListView extends ListView implements OnScrollListener{
 		private void initView() {
 			
 			mContainer = new LinearLayout(getContext());
-			mContainer.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+			mContainer.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
 			
 			mContent = new RelativeLayout(getContext());
-			mContent.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+			mContent.setLayoutParams(new LinearLayout.LayoutParams(-1, UEMethod.dp2px(getContext(), 60)));
 			
 			int margin = UEMethod.dp2px(getContext(), 10);
 			int size = UEMethod.dp2px(getContext(), 36);
 			RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(size, size);
 			params1.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-			params1.setMargins(margin, margin, margin, margin);
+			params1.setMargins(margin, 0, margin, 0);
 			mProgressBar = new UILoadingBar(getContext());
 			mProgressBar.setLayoutParams(params1);
 			mProgressBar.setType(UILoadingBar.TYPE_SECTORE_THREE);
@@ -886,12 +886,14 @@ public class UIListView extends ListView implements OnScrollListener{
 			mHintTextView.setVisibility(View.INVISIBLE);
 			mProgressBar.setVisibility(View.INVISIBLE);
 			mHintTextView.setVisibility(View.INVISIBLE);
+			mContainer.setVisibility(View.VISIBLE);
 			if (state == STATE_READY) {
 				mHintTextView.setVisibility(View.VISIBLE);
 				mHintTextView.setText(STRING_LOAD);
 			} else if (state == STATE_LOADING) {
 				mProgressBar.setVisibility(View.VISIBLE);
 			} else {
+				mContainer.setVisibility(View.GONE);
 				mHintTextView.setVisibility(View.GONE);
 				mProgressBar.setVisibility(View.GONE);
 			}
@@ -1249,7 +1251,7 @@ public class UIListView extends ListView implements OnScrollListener{
 			case MotionEvent.ACTION_CANCEL:
 				//TODO 兼容Fragment
 //				if (isFling || (pressX - event.getX()) > (mMenuView.getWidth() / 2)) {
-				if ((pressX - event.getX()) > (mMenuView.getWidth() / 6)) {
+				if ((pressX - event.getX()) > 20) {
 					smoothOpenMenu();
 				} else {
 					smoothCloseMenu();
