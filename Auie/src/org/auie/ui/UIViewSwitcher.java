@@ -160,7 +160,7 @@ public class UIViewSwitcher extends LinearLayout {
 		params3.setMargins(0, UEMethod.dp2px(getContext(), 6), 0, 0);
 		ImageView noticeImageView = new ImageView(getContext());
 		noticeImageView.setLayoutParams(params3);
-		noticeImageView.setScaleType(ScaleType.FIT_XY);
+		noticeImageView.setScaleType(ScaleType.FIT_CENTER);
 		
 		tabContent.addView(imageView);
 		tabContent.addView(textView);
