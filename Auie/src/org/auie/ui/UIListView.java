@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.auie.ui.UIListView.MenuView.ItemWidthType;
 import org.auie.utils.UEMethod;
 
 import android.annotation.SuppressLint;
@@ -78,6 +79,7 @@ public class UIListView extends ListView implements OnScrollListener{
 	private OnUITouchListener onTouchListener;
 	private UIListViewListener listViewListener;
 	private int type = TYPE_BOTH;
+	private ItemWidthType itemWidthType = ItemWidthType.ITEM_WIDTH_DEFAULT;
 	
 	private int totalItemCount;
 	private int scrollBack;
@@ -609,6 +611,11 @@ public class UIListView extends ListView implements OnScrollListener{
 		this.onTouchListener = onTouchListener;
 	}
 
+	public void setItemWidthType(ItemWidthType itemWidthType) {
+		this.itemWidthType = itemWidthType;
+	}
+
+
 	/**
 	 * interface
 	 */
@@ -991,6 +998,7 @@ public class UIListView extends ListView implements OnScrollListener{
 				Menu menu = new Menu(context);
 				createMenu(menu);
 				MenuView menuView = new MenuView(menu);
+				menuView.setItemWidth(itemWidthType);
 				menuView.setOnItemClickListener(this);
 				menuLayout = new MenuLayout(contentView, menuView);
 			} else {
