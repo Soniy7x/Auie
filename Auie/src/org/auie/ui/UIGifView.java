@@ -1,30 +1,23 @@
 package org.auie.ui;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 
-import org.auie.utils.OnGifParseStatusListener;
+import org.auie.utils.UEGifViewListener;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
-import android.os.Environment;
+import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 
 /**
  * 
@@ -32,9 +25,7 @@ import android.widget.ImageView;
  * 
  * @author ant.cy.liao
  */
-
-@TargetApi(Build.VERSION_CODES.L)
-public class UIGifView extends ImageView implements OnGifParseStatusListener {
+public class UIGifView extends View implements UEGifViewListener {
 
 	/** GIF解码器 */
 	private UIGifDecoder gifDecoder = null;
@@ -42,13 +33,13 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 	private Bitmap currentImage = null;
 	private boolean isRun = true;
 	private boolean pause = false;
+	private int showWidth = -1;
+	private Rect rect = null;
 	private DrawThread drawThread = null;
-	private View backView = null;
 	private GifImageType animationType = GifImageType.SYNC_DECODER;
 
 	/**
-	 * 解码过程中，GIF动画显示的方式
-	 * 如果图片较大，那么解码过程会比较长，这个解码过程中，GIF如何显示
+	 * 解码过程中，GIF动画显示的方式 如果图片较大，那么解码过程会比较长，这个解码过程中，GIF如何显示
 	 */
 	public enum GifImageType {
 		/**
@@ -73,21 +64,16 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 
 	public UIGifView(Context context) {
 		super(context);
-		setScaleType(ImageView.ScaleType.FIT_XY);
+
 	}
 
 	public UIGifView(Context context, AttributeSet attrs) {
-		super(context, attrs, 0);
+		this(context, attrs, 0);
 	}
 
-	public UIGifView(Context context, AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
-		setScaleType(ImageView.ScaleType.FIT_XY);
-	}
+	public UIGifView(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
 
-	public UIGifView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);
-		setScaleType(ImageView.ScaleType.FIT_XY);
 	}
 
 	/**
@@ -97,11 +83,11 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 	 *            要设置的图片
 	 */
 	private void setGifDecoderImage(byte[] gif) {
-
-		if (gifDecoder == null) {
-			gifDecoder = new UIGifDecoder(this);
+		if (gifDecoder != null) {
+			gifDecoder.free();
+			gifDecoder = null;
 		}
-		gifDecoder.setGifImage(gif);
+		gifDecoder = new UIGifDecoder(gif, this);
 		gifDecoder.start();
 	}
 
@@ -112,36 +98,19 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 	 *            要设置的图片
 	 */
 	private void setGifDecoderImage(InputStream is) {
-
-		if (gifDecoder == null) {
-			gifDecoder = new UIGifDecoder(this);
-		}
-		gifDecoder.setGifImage(is);
-		gifDecoder.start();
-
-	}
-
-	/**
-	 * 把本GIF动画设置为另外view的背景
-	 * 
-	 * @param v 要使用GIF作为背景的view
-	 */
-	public void setAsBackground(View v) {
-		backView = v;
-	}
-
-	protected Parcelable onSaveInstanceState() {
-		super.onSaveInstanceState();
-		if (gifDecoder != null)
+		if (gifDecoder != null) {
 			gifDecoder.free();
-
-		return null;
+			gifDecoder = null;
+		}
+		gifDecoder = new UIGifDecoder(is, this);
+		gifDecoder.start();
 	}
 
 	/**
 	 * 以字节数据形式设置GIF图片
 	 * 
-	 * @param gif 图片
+	 * @param gif
+	 *            图片
 	 */
 	public void setGifImage(byte[] gif) {
 		setGifDecoderImage(gif);
@@ -150,7 +119,8 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 	/**
 	 * 以字节流形式设置GIF图片
 	 * 
-	 * @param is 图片
+	 * @param is
+	 *            图片
 	 */
 	public void setGifImage(InputStream is) {
 		setGifDecoderImage(is);
@@ -159,22 +129,70 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 	/**
 	 * 以资源形式设置GIF图片
 	 * 
-	 * @param resId GIF图片的资源ID
+	 * @param resId
+	 *            GIF图片的资源ID
 	 */
 	public void setGifImage(int resId) {
-		Resources r = getResources();
+		Resources r = this.getResources();
 		InputStream is = r.openRawResource(resId);
 		setGifDecoderImage(is);
 	}
 
-	public void destroy() {
-		if (gifDecoder != null)
-			gifDecoder.free();
+	protected void onDraw(Canvas canvas) {
+		super.onDraw(canvas);
+		if (gifDecoder == null)
+			return;
+		if (currentImage == null) {
+			currentImage = gifDecoder.getImage();
+		}
+		if (currentImage == null) {
+			return;
+		}
+		int saveCount = canvas.getSaveCount();
+		canvas.save();
+		canvas.translate(getPaddingLeft(), getPaddingTop());
+		if (showWidth == -1) {
+			canvas.drawBitmap(currentImage, 0, 0, null);
+		} else {
+			canvas.drawBitmap(currentImage, null, rect, null);
+		}
+		canvas.restoreToCount(saveCount);
+	}
+
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		int pleft = getPaddingLeft();
+		int pright = getPaddingRight();
+		int ptop = getPaddingTop();
+		int pbottom = getPaddingBottom();
+
+		int widthSize;
+		int heightSize;
+
+		int w;
+		int h;
+
+		if (gifDecoder == null) {
+			w = 1;
+			h = 1;
+		} else {
+			w = gifDecoder.width;
+			h = gifDecoder.height;
+		}
+
+		w += pleft + pright;
+		h += ptop + pbottom;
+
+		w = Math.max(w, getSuggestedMinimumWidth());
+		h = Math.max(h, getSuggestedMinimumHeight());
+
+		widthSize = resolveSize(w, widthMeasureSpec);
+		heightSize = resolveSize(h, heightMeasureSpec);
+
+		setMeasuredDimension(widthSize, heightSize);
 	}
 
 	/**
-	 * 只显示第一帧图片
-	 * 调用本方法后，GIF不会显示动画，只会显示GIF的第一帧图
+	 * 只显示第一帧图片 调用本方法后，GIF不会显示动画，只会显示GIF的第一帧图
 	 */
 	public void showCover() {
 		if (gifDecoder == null)
@@ -185,8 +203,7 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 	}
 
 	/**
-	 * 继续显示动画
-	 * 本方法在调用showCover后，会让动画继续显示，如果没有调用showCover方法，则没有任何效果
+	 * 继续显示动画 本方法在调用showCover后，会让动画继续显示，如果没有调用showCover方法，则没有任何效果
 	 */
 	public void showAnimation() {
 		if (pause) {
@@ -195,18 +212,36 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 	}
 
 	/**
-	 * 设置GIF在解码过程中的显示方式
-	 * 本方法只能在setGifImage方法之前设置，否则设置无效
+	 * 设置GIF在解码过程中的显示方式 本方法只能在setGifImage方法之前设置，否则设置无效
 	 * 
-	 * @param type 显示方式
+	 * @param type
+	 *            显示方式
 	 */
 	public void setGifImageType(GifImageType type) {
 		if (gifDecoder == null)
 			animationType = type;
 	}
 
-	@Override
-	public void onParseCompleted(boolean parseStatus, int frameIndex) {
+	/**
+	 * 设置要显示的图片的大小 当设置了图片大小 之后，会按照设置的大小来显示GIF（按设置后的大小来进行拉伸或压缩）
+	 * 
+	 * @param width
+	 *            要显示的图片宽
+	 * @param height
+	 *            要显示的图片高
+	 */
+	public void setShowDimension(int width, int height) {
+		if (width > 0 && height > 0) {
+			showWidth = width;
+			rect = new Rect();
+			rect.left = 0;
+			rect.top = 0;
+			rect.right = width;
+			rect.bottom = height;
+		}
+	}
+
+	public void parseOk(boolean parseStatus, int frameIndex) {
 		if (parseStatus) {
 			if (gifDecoder != null) {
 				switch (animationType) {
@@ -262,33 +297,20 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 			Message msg = redrawHandler.obtainMessage();
 			redrawHandler.sendMessage(msg);
 		}
-
-	}
-
-	private void drawImage() {
-		setImageBitmap(currentImage);
-		invalidate();
 	}
 
 	@SuppressLint("HandlerLeak")
 	private Handler redrawHandler = new Handler() {
-		@SuppressWarnings("deprecation")
 		public void handleMessage(Message msg) {
-			try {
-				if (backView != null) {
-					backView.setBackgroundDrawable(new BitmapDrawable(
-							currentImage));
-				} else {
-					drawImage();
-				}
-			} catch (Exception ex) {
-				Log.e("GifView", ex.toString());
-			}
+			invalidate();
 		}
 	};
 
 	/**
 	 * 动画线程
+	 * 
+	 * @author liao
+	 *
 	 */
 	private class DrawThread extends Thread {
 		public void run() {
@@ -296,37 +318,19 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 				return;
 			}
 			while (isRun) {
-				if (gifDecoder.getFrameCount() == 1) {
-					// 如果单帧，不进行动画
-					UIGifFrame f = gifDecoder.next();
-					currentImage = f.image;
-					gifDecoder.free();
-					reDraw();
-
-					break;
-				}
 				if (pause == false) {
 					UIGifFrame frame = gifDecoder.next();
-
-					if (frame == null) {
-						SystemClock.sleep(50);
-						continue;
-					}
-					if (frame.image != null)
-						currentImage = frame.image;
-					else if (frame.imageName != null) {
-						currentImage = BitmapFactory
-								.decodeFile(frame.imageName);
-					}
+					currentImage = frame.image;
 					long sp = frame.delay;
 					if (redrawHandler != null) {
-						reDraw();
+						Message msg = redrawHandler.obtainMessage();
+						redrawHandler.sendMessage(msg);
 						SystemClock.sleep(sp);
 					} else {
 						break;
 					}
 				} else {
-					SystemClock.sleep(50);
+					SystemClock.sleep(10);
 				}
 			}
 		}
@@ -336,16 +340,13 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		/**
 		 * 构造函数
 		 * 
-		 * @param im 图片
-		 * @param del 延时
+		 * @param im
+		 *            图片
+		 * @param del
+		 *            延时
 		 */
 		public UIGifFrame(Bitmap im, int del) {
 			image = im;
-			delay = del;
-		}
-
-		public UIGifFrame(String name, int del) {
-			imageName = name;
 			delay = del;
 		}
 
@@ -353,9 +354,6 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		public Bitmap image;
 		/** 延时 */
 		public int delay;
-		/** 当图片存成文件时的文件名 */
-		public String imageName = null;
-
 		/** 下一帧 */
 		public UIGifFrame nextFrame = null;
 	}
@@ -387,7 +385,8 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		private int bgIndex; // background color index
 		private int bgColor; // background color
 		private int lastBgColor; // previous bg color
-		// private int pixelAspect; // pixel aspect ratio
+		@SuppressWarnings("unused")
+		private int pixelAspect; // pixel aspect ratio
 
 		private boolean lctFlag; // local color table flag
 		private boolean interlace; // interlace flag
@@ -424,141 +423,18 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		private UIGifFrame gifFrame; // frames read from current file
 		private int frameCount;
 
-		private OnGifParseStatusListener listener = null;
+		private UEGifViewListener action = null;
 
 		private byte[] gifData = null;
-		/** 图片缓存的路径 */
-		private String imagePath = null;
-		/** 是否要缓存图片 */
-		private boolean cacheImage = false;
 
-		public UIGifDecoder(OnGifParseStatusListener action) {
-			this.listener = action;
-		}
-
-		public void setGifImage(byte[] data) {
+		public UIGifDecoder(byte[] data, UEGifViewListener act) {
 			gifData = data;
+			action = act;
 		}
 
-		public void setGifImage(InputStream is) {
+		public UIGifDecoder(InputStream is, UEGifViewListener act) {
 			in = is;
-		}
-
-		/**
-		 * 设置是否要缓存图片
-		 * 当设置要缓存图片时，解码出来的图片会直接写到文件中，而不保留在内存中，缓存时如果有SD卡，会直接缓存到SD卡中，
-		 * 如果没有则会缓存到当前APK下的文件目录中
-		 * 如果创建缓存目录失败，会自动切换为不缓存
-		 * 默认不缓存
-		 * 
-		 * @param cache 是否要缓存，true要缓存
-		 * @param context
-		 */
-		public void setCacheImage(boolean cache, Context context) {
-			cacheImage = cache;
-			try {
-				if (cacheImage) {
-					boolean f = true;
-
-					if (Environment.getExternalStorageState().equals(
-							Environment.MEDIA_MOUNTED)) {
-						imagePath = android.os.Environment
-								.getExternalStorageDirectory().getPath()
-								+ File.separator
-								+ "gifView_tmp_dir"
-								+ File.separator + getDir();
-						if (!createDir(imagePath)) {
-							f = true;
-						} else {
-							f = false;
-						}
-					} else {
-						f = true;
-					}
-
-					if (f) {
-						imagePath = context.getFilesDir().getAbsolutePath()
-								+ File.separator + getDir();
-						if (!createDir(imagePath))
-							cacheImage = false;
-					}
-				}
-			} catch (Exception ex) {
-				cacheImage = false;
-			}
-		}
-
-		private void delDir(String folderPath, boolean dirDel) {
-			try {
-				delAllFile(folderPath);
-				if (dirDel) {
-					String filePath = folderPath;
-					filePath = filePath.toString();
-					java.io.File myFilePath = new java.io.File(filePath);
-					myFilePath.delete();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-
-		private boolean delAllFile(String path) {
-			boolean bea = false;
-			File file = new File(path);
-			if (!file.exists()) {
-				return bea;
-			}
-			if (!file.isDirectory()) {
-				return bea;
-			}
-			String[] tempList = file.list();
-			File temp = null;
-			for (int i = 0; i < tempList.length; i++) {
-				if (path.endsWith(File.separator)) {
-					temp = new File(path + tempList[i]);
-				} else {
-					temp = new File(path + File.separator + tempList[i]);
-				}
-				if (temp.isFile()) {
-					temp.delete();
-				} else if (temp.isDirectory()) {
-					delAllFile(path + File.separator + tempList[i]);
-					delDir(path + File.separator + tempList[i], true);
-					bea = true;
-				}
-			}
-			return bea;
-		}
-
-		private synchronized String getDir() {
-			return String.valueOf(System.currentTimeMillis());
-		}
-
-		private boolean createDir(String path) {
-			boolean ret = false;
-			try {
-				File file = new File(path);
-				if (!file.exists()) {
-					ret = file.mkdirs();
-
-				} else
-					ret = true;
-			} catch (Exception e) {
-
-				ret = false;
-			}
-			return ret;
-		}
-
-		private void saveImage(Bitmap image, String name) {
-			try {
-				new File(imagePath + File.separator + name + ".png");
-				FileOutputStream fos = new FileOutputStream(imagePath
-						+ File.separator + getDir() + ".png");
-				image.compress(Bitmap.CompressFormat.PNG, 100, fos);
-			} catch (Exception ex) {
-
-			}
+			action = act;
 		}
 
 		public void run() {
@@ -574,17 +450,11 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		 */
 		public void free() {
 			UIGifFrame fg = gifFrame;
-			if (cacheImage == false) {
-				while (fg != null) {
-					if (fg.image != null && !fg.image.isRecycled())
-						fg.image.recycle();
-					fg.image = null;
-					fg = null;
-					gifFrame = gifFrame.nextFrame;
-					fg = gifFrame;
-				}
-			} else {
-				delDir(imagePath, true);
+			while (fg != null) {
+				fg.image = null;
+				fg = null;
+				gifFrame = gifFrame.nextFrame;
+				fg = gifFrame;
 			}
 			if (in != null) {
 				try {
@@ -594,8 +464,6 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 				in = null;
 			}
 			gifData = null;
-			status = 0;
-			currentFrame = null;
 		}
 
 		/**
@@ -619,7 +487,8 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		/**
 		 * 取某帧的延时时间
 		 * 
-		 * @param n 第几帧
+		 * @param n
+		 *            第几帧
 		 * @return 延时时间，毫秒
 		 */
 		public int getDelay(int n) {
@@ -757,7 +626,8 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		/**
 		 * 取第几帧的图片
 		 * 
-		 * @param n 帧数
+		 * @param n
+		 *            帧数
 		 * @return 可画的图片，如果没有此帧或者出错，返回null
 		 */
 		public Bitmap getFrameImage(int n) {
@@ -771,7 +641,6 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		/**
 		 * 取当前帧图片
 		 * 
-		 * @hide
 		 * @return 当前帧可画的图片
 		 */
 		public UIGifFrame getCurrentFrame() {
@@ -781,8 +650,8 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		/**
 		 * 取第几帧，每帧包含了可画的图片和延时时间
 		 * 
-		 * @hide
-		 * @param n 帧数
+		 * @param n
+		 *            帧数
 		 * @return
 		 */
 		public UIGifFrame getFrame(int n) {
@@ -801,8 +670,6 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 
 		/**
 		 * 重置，进行本操作后，会直接到第一帧
-		 * 
-		 * @hide
 		 */
 		public void reset() {
 			currentFrame = gifFrame;
@@ -811,7 +678,6 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 		/**
 		 * 下一帧，进行本操作后，通过getCurrentFrame得到的是下一帧
 		 * 
-		 * @hide
 		 * @return 返回下一帧
 		 */
 		public UIGifFrame next() {
@@ -819,8 +685,6 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 				isShow = true;
 				return gifFrame;
 			} else {
-				if (currentFrame == null)
-					return null;
 				if (status == STATUS_PARSING) {
 					if (currentFrame.nextFrame != null)
 						currentFrame = currentFrame.nextFrame;
@@ -831,15 +695,6 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 						currentFrame = gifFrame;
 					}
 				}
-				// if(cacheImage){
-				// Log.d("===", "cache");
-				// try{
-				// currentFrame.image = BitmapFactory.decodeFile(imagePath +
-				// File.separator + currentFrame.imageName);
-				// }catch(Exception ex){
-				// ex.printStackTrace();
-				// }
-				// }
 				return currentFrame;
 			}
 		}
@@ -850,6 +705,11 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 			return readStream();
 		}
 
+		// public int read(byte[] data){
+		// InputStream is = new ByteArrayInputStream(data);
+		// return read(is);
+		// }
+
 		private int readStream() {
 			init();
 			if (in != null) {
@@ -858,10 +718,10 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 					readContents();
 					if (frameCount < 0) {
 						status = STATUS_FORMAT_ERROR;
-						listener.onParseCompleted(false, -1);
+						action.parseOk(false, -1);
 					} else {
 						status = STATUS_FINISH;
-						listener.onParseCompleted(true, -1);
+						action.parseOk(true, -1);
 					}
 				}
 				try {
@@ -872,7 +732,7 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 
 			} else {
 				status = STATUS_OPEN_ERROR;
-				listener.onParseCompleted(false, -1);
+				action.parseOk(false, -1);
 			}
 			return status;
 		}
@@ -1171,28 +1031,14 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 			// createImage(width, height);
 			setPixels(); // transfer pixel data to image
 			if (gifFrame == null) {
-				if (cacheImage) {
-					String name = getDir();
-					gifFrame = new UIGifFrame(imagePath + File.separator + name
-							+ ".png", delay);
-					saveImage(image, name);
-				} else {
-					gifFrame = new UIGifFrame(image, delay);
-				}
+				gifFrame = new UIGifFrame(image, delay);
 				currentFrame = gifFrame;
 			} else {
 				UIGifFrame f = gifFrame;
 				while (f.nextFrame != null) {
 					f = f.nextFrame;
 				}
-				if (cacheImage) {
-					String name = getDir();
-					f.nextFrame = new UIGifFrame(imagePath + File.separator
-							+ name + ".png", delay);
-					saveImage(image, name);
-				} else {
-					f.nextFrame = new UIGifFrame(image, delay);
-				}
+				f.nextFrame = new UIGifFrame(image, delay);
 			}
 			// frames.addElement(new GifFrame(image, delay)); // add image to
 			// frame
@@ -1201,7 +1047,7 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 				act[transIndex] = save;
 			}
 			resetFrame();
-			listener.onParseCompleted(true, frameCount);
+			action.parseOk(true, frameCount);
 		}
 
 		private void readLSD() {
@@ -1215,7 +1061,7 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 			// 5 : gct sort flag
 			gctSize = 2 << (packed & 7); // 6-8 : gct size
 			bgIndex = read(); // background color index
-			// pixelAspect = read(); // pixel aspect ratio
+			pixelAspect = read(); // pixel aspect ratio
 		}
 
 		private void readNetscapeExt() {
@@ -1259,5 +1105,4 @@ public class UIGifView extends ImageView implements OnGifParseStatusListener {
 			} while ((blockSize > 0) && !err());
 		}
 	}
-
 }
