@@ -25,6 +25,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -229,16 +230,16 @@ public final class UEAnnotationManager {
 				return;
 			}
 			if (field.isAnnotationPresent(UEText.class)) {
-				clazz.getMethod("setText", String.class).invoke(view, field.getAnnotation(UEText.class).value());
+				clazz.getMethod("setText", CharSequence.class).invoke(view, field.getAnnotation(UEText.class).value());
 			}
 			if (field.isAnnotationPresent(UETextSize.class)) {
-				clazz.getMethod("setTextSize", float.class).invoke(view, field.getAnnotation(UETextSize.class).value());
+				clazz.getMethod("setTextSize", new Class<?>[]{int.class, float.class}).invoke(view, new Object[]{TypedValue.COMPLEX_UNIT_SP, field.getAnnotation(UETextSize.class).value()});
 			}
 			if (field.isAnnotationPresent(UETextColor.class)) {
 				clazz.getMethod("setTextColor", int.class).invoke(view, Color.parseColor(field.getAnnotation(UETextColor.class).value()));
 			}
 		}catch(Exception e){
-			Log.d("initializeWidgets", e.getMessage());
+			Log.d("initializeWidgets", e.toString());
 		}
 	}
 	
