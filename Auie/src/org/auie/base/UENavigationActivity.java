@@ -153,15 +153,25 @@ public abstract class UENavigationActivity extends Activity implements OnClickLi
 	@Override
 	public void onClick(View v) {}
 
-	protected void setLeftImageResource(int resId){
+	public void setLeftImageResource(int resId){
 		mNavigationView.setLeftImageResource(resId);
 	}
 	
-	protected void setLeftText(String text){
+	public void setLeftText(String text){
 		mNavigationView.setLeftText(text);
 	}
 	
-	protected void setTitle(String title){
+	@Override
+	public void setTitle(int titleId) {
+		mNavigationView.setTitle(getResources().getString(titleId));
+	}
+
+	@Override
+	public void setTitle(CharSequence title) {
+		mNavigationView.setTitle(title.toString());
+	}
+
+	public void setTitle(String title){
 		mNavigationView.setTitle(title);
 	}
 	
