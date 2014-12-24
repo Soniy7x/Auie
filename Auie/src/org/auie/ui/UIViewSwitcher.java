@@ -95,6 +95,7 @@ public class UIViewSwitcher extends LinearLayout {
 
 	public void setViewPager(UIViewPager pager) {
 		this.pager = pager;
+		this.pager.setEnableScroll(false);
 
 		if (pager.getAdapter() == null) {
 			throw new IllegalStateException("ViewPager does not have adapter instance.");
