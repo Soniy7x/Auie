@@ -1,18 +1,17 @@
 package org.auie.ui;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UIIndexBar extends View{
 	
 	private static final String[] INDEX_ITEM = {

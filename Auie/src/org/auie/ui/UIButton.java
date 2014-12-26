@@ -4,14 +4,12 @@ import org.auie.image.UEImage;
 import org.auie.utils.UEDevice;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -25,9 +23,8 @@ import android.widget.RemoteViews.RemoteView;
  * @author Soniy7x
  *
  */
-@SuppressLint("ClickableViewAccessibility")
 @RemoteView
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UIButton extends Button {
 
 	private static final int DEFAULT_BACKGROUNDCOLOR = Color.parseColor("#D8D8D8");
@@ -157,6 +154,7 @@ public class UIButton extends Button {
 		super.setAlpha(alpha);
 	}
 	
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		switch (event.getAction()) {

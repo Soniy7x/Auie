@@ -8,12 +8,11 @@ import java.util.TimerTask;
 import org.auie.utils.UEDevice;
 import org.auie.utils.UEMethod;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
@@ -23,7 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UINavigationView extends LinearLayout {
 	
 	public static final int NOTICE_SHOW_SHORT = 1200;

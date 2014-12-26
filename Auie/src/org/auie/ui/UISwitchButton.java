@@ -3,7 +3,6 @@ package org.auie.ui;
 import org.auie.utils.UEMethod;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -11,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.RectF;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,8 +18,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.view.WindowManager;
 
-@SuppressLint("ClickableViewAccessibility")
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UISwitchButton extends View implements OnTouchListener{
 	
 	public static final int TYPE_POINT = 0;
@@ -58,6 +55,7 @@ public class UISwitchButton extends View implements OnTouchListener{
 		init();
 	}
 	
+	@SuppressLint("ClickableViewAccessibility")
 	@SuppressWarnings("deprecation")
 	public void init(){
 		setOnTouchListener(this);

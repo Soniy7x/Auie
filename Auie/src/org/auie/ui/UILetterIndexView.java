@@ -11,13 +11,12 @@ import org.auie.utils.UEException.UEIndexNotFoundException;
 import org.auie.utils.UEMethod;
 import org.auie.utils.UEPinyin;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -32,7 +31,7 @@ import android.widget.RelativeLayout;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
 
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UILetterIndexView extends RelativeLayout {
 	
 	private ListView mListView;

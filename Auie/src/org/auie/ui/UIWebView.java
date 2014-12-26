@@ -6,7 +6,6 @@ import java.util.Map;
 import org.auie.utils.UEMethod;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,7 +13,6 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.RectF;
-import android.os.Build;
 import android.text.TextUtils.TruncateAt;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -26,7 +24,7 @@ import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UIWebView extends LinearLayout {
 
 	private static final int LIGHT = Color.parseColor("#C8C8C8");

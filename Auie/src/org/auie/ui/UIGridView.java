@@ -1,12 +1,11 @@
 package org.auie.ui;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.GridView;
 
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UIGridView extends GridView {
 	
 	private boolean measure = false;

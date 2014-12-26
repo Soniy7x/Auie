@@ -5,12 +5,11 @@ import java.util.ArrayList;
 import org.auie.image.UEImage;
 import org.auie.utils.UEUnit;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -23,6 +22,7 @@ import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+@SuppressLint("NewApi")
 public class UIImageCarouselView extends RelativeLayout {
 	
 	private ViewPager mViewPager;
@@ -58,7 +58,6 @@ public class UIImageCarouselView extends RelativeLayout {
 		init();
 	}
 
-	@TargetApi(Build.VERSION_CODES.L)
 	public UIImageCarouselView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 		init();

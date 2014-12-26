@@ -5,7 +5,6 @@ import org.auie.utils.UEHtmlColor;
 import org.auie.utils.UEMethod;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,7 +13,6 @@ import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -22,7 +20,7 @@ import android.view.MotionEvent;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.EditText;
 
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UIEditText extends EditText {
 	
 	public static final int TYPE_LINE = 0;

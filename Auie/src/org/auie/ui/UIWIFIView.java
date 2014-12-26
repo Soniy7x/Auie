@@ -2,18 +2,17 @@ package org.auie.ui;
 
 import org.auie.utils.UEMethod;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.graphics.Paint.Style;
-import android.os.Build;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
-@TargetApi(Build.VERSION_CODES.L)
+@SuppressLint("NewApi")
 public class UIWIFIView extends View {
 
 	public static final int STATUS_NORMAL = 0;
