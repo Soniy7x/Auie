@@ -1,17 +1,13 @@
 package org.auie.base;
 
 import org.auie.annotation.UEAnnotationManager;
-import org.auie.utils.UEDevice;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 
 /**
  * 
@@ -48,13 +44,7 @@ public abstract class UEActivity extends Activity implements OnClickListener{
 	/**
 	 * 初始化准备方法
 	 */
-	@TargetApi(Build.VERSION_CODES.KITKAT)
-	protected void initializePrepare() {
-		if (UEDevice.getOSVersionCode() >= Build.VERSION_CODES.KITKAT) {
-			getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-			getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-		}
-	}
+	protected void initializePrepare() {}
 	
 	/**
 	 * 自定义字体方法
