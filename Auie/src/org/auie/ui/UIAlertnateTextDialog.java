@@ -41,6 +41,7 @@ public class UIAlertnateTextDialog extends PopupWindow{
 	private int buttonSize = 14;
 	private int contentSize = 16;
 	private String title = "";
+	private String defaultContent = "";
 	private String contentHint = "";
 	private boolean allowNull = true;
 	
@@ -89,6 +90,7 @@ public class UIAlertnateTextDialog extends PopupWindow{
 		editText.setTextSize(contentSize);
 		editText.setTextColor(contentColor);
 		editText.setHint(contentHint);
+		editText.setText(defaultContent);
 		editText.setHintTextColor(contentHintColor);
 		editText.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.BOTTOM);
 		editText.setBackgroundColor(Color.TRANSPARENT);
@@ -281,6 +283,14 @@ public class UIAlertnateTextDialog extends PopupWindow{
 
 	public void setContentHint(String contentHint) {
 		this.contentHint = contentHint;
+	}
+
+	public String getDefaultContent() {
+		return defaultContent;
+	}
+
+	public void setDefaultContent(String defaultContent) {
+		this.defaultContent = defaultContent;
 	}
 
 	public boolean isAllowNull() {
