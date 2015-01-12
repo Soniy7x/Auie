@@ -367,6 +367,14 @@ public class UIListView extends ListView implements OnScrollListener{
 	public void setItemControl(ItemControl itemControl) {
 		this.mItemControl = itemControl;
 	}
+	
+	public View getHeaderView(){
+		return headerView;
+	}
+	
+	public View getFooterView(){
+		return footerView;
+	}
 
 	//true说明ListView处于尺寸探测中, false说明尺寸探测完成
 	public boolean isMeasure() {
