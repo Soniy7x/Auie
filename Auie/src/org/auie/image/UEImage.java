@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.auie.utils.UEException.UEImageNotByteException;
 
@@ -28,8 +29,10 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 
 @SuppressWarnings("deprecation")
-public class UEImage {
+public class UEImage implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
+
 	public static final float TRANSFORMROUND_CIRCLE = -1;
 
 	private Bitmap bitmap = null;

@@ -28,6 +28,7 @@ public class UIFlexListView extends FrameLayout implements OnScrollListener{
 	private LinearLayout mHeaderActionBarLayout;
 	private View mHeaderView;
 	private UIListView mListView;
+	private OnFlexListener mFlexListener;
 	
 	private boolean isReset = false;
 	private boolean isSuspend = false;
@@ -76,7 +77,7 @@ public class UIFlexListView extends FrameLayout implements OnScrollListener{
 		mListView.setOnScrollListener(this);
 		mHeaderLayout = new LinearLayout(getContext());
 		mHeaderLayout.setOrientation(LinearLayout.VERTICAL);
-		mHeaderLayout.setBackgroundColor(Color.BLUE);
+		mHeaderLayout.setBackgroundColor(Color.WHITE);
 		mHeaderLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 		mHeaderLayout.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 			@Override
@@ -114,6 +115,9 @@ public class UIFlexListView extends FrameLayout implements OnScrollListener{
 			isSuspend = true;
 		}else {
 			isSuspend = false;
+		}
+		if (mFlexListener != null) {
+			mFlexListener.flexStatus(isSuspend);
 		}
 		if (visibleItemCount == totalItemCount && totalItemCount > 1) {
 			isReset = true;
@@ -204,5 +208,21 @@ public class UIFlexListView extends FrameLayout implements OnScrollListener{
 	 */
 	public LinearLayout getActionBarView(){
 		return mHeaderActionBarLayout;
+	}
+	
+	public LinearLayout getHeaderLayout(){
+		return mHeaderLayout;
+	}
+	
+	public OnFlexListener getOnFlexListener() {
+		return mFlexListener;
+	}
+
+	public void setOnFlexListener(OnFlexListener mFlexListener) {
+		this.mFlexListener = mFlexListener;
+	}
+
+	public static interface OnFlexListener{
+		public void flexStatus(boolean status);
 	}
 }

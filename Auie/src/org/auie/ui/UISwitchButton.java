@@ -141,17 +141,17 @@ public class UISwitchButton extends View implements OnTouchListener{
 			mPaint.setStrokeWidth(1.8f);
 			mPaint.setStyle(Style.STROKE);
 			if (status) {
-				mPaint.setColor(Color.parseColor("#009efc"));
+				mPaint.setColor(Color.parseColor("#88FFFFFF"));
 				canvas.drawLine(4 * DP, getHeight()/2, getWidth() - getHeight() + 4 * DP, getHeight()/2, mPaint);
 				canvas.drawCircle(getWidth() - getHeight()/2, getHeight()/2, getHeight()/2 - 4 * DP, mPaint);
-				mPaint.setColor(Color.parseColor("#0CD3FA"));
+				mPaint.setColor(Color.parseColor("#88FFFFFF"));
 				mPaint.setStyle(Style.FILL);
 				canvas.drawCircle(getWidth() - getHeight()/2, getHeight()/2, getHeight()/2 - 4.8f * DP, mPaint);
 			}else {
-				mPaint.setColor(Color.parseColor("#A8A8A8"));
+				mPaint.setColor(Color.parseColor("#88FFFFFF"));
 				canvas.drawLine(getHeight() - 4 * DP, getHeight()/2, getWidth() - 4 * DP, getHeight()/2, mPaint);
 				canvas.drawCircle(getHeight()/2, getHeight()/2, getHeight()/2 - 4 * DP, mPaint);
-				mPaint.setColor(Color.parseColor("#C8C8C8"));
+				mPaint.setColor(Color.parseColor("#FF3366"));
 				mPaint.setStyle(Style.FILL);
 				canvas.drawCircle(getHeight()/2, getHeight()/2, getHeight()/2 - 4.8f * DP, mPaint);
 			}
