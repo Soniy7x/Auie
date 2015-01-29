@@ -71,6 +71,7 @@ public class UILetterIndexView extends RelativeLayout {
 		mListView = new ListView(getContext());
 		mListView.setFadingEdgeLength(0);
 		mListView.setDivider(null);
+		mListView.setOverScrollMode(ListView.OVER_SCROLL_NEVER);
 		mListView.setVerticalScrollBarEnabled(false);
 		mListView.setLayoutParams(params1);
 		mListView.setOnItemClickListener(new OnItemClickListener() {

@@ -32,6 +32,8 @@ public class UISwitchButton extends View implements OnTouchListener{
 	private Paint mPaint = new Paint();
 	private boolean status = OFF;
 	private int type = TYPE_POINT;
+	private int statusFalseColor = 0xFFFF3366;
+	private int statusTrueColor = 0x88FFFFFF;
 	
 	private OnUISwitchChangeListener switchChangeListener;
 	
@@ -141,17 +143,17 @@ public class UISwitchButton extends View implements OnTouchListener{
 			mPaint.setStrokeWidth(1.8f);
 			mPaint.setStyle(Style.STROKE);
 			if (status) {
-				mPaint.setColor(Color.parseColor("#88FFFFFF"));
+				mPaint.setColor(statusTrueColor);
 				canvas.drawLine(4 * DP, getHeight()/2, getWidth() - getHeight() + 4 * DP, getHeight()/2, mPaint);
 				canvas.drawCircle(getWidth() - getHeight()/2, getHeight()/2, getHeight()/2 - 4 * DP, mPaint);
-				mPaint.setColor(Color.parseColor("#88FFFFFF"));
+				mPaint.setColor(statusTrueColor);
 				mPaint.setStyle(Style.FILL);
 				canvas.drawCircle(getWidth() - getHeight()/2, getHeight()/2, getHeight()/2 - 4.8f * DP, mPaint);
 			}else {
-				mPaint.setColor(Color.parseColor("#88FFFFFF"));
+				mPaint.setColor(statusTrueColor);
 				canvas.drawLine(getHeight() - 4 * DP, getHeight()/2, getWidth() - 4 * DP, getHeight()/2, mPaint);
 				canvas.drawCircle(getHeight()/2, getHeight()/2, getHeight()/2 - 4 * DP, mPaint);
-				mPaint.setColor(Color.parseColor("#FF3366"));
+				mPaint.setColor(statusFalseColor);
 				mPaint.setStyle(Style.FILL);
 				canvas.drawCircle(getHeight()/2, getHeight()/2, getHeight()/2 - 4.8f * DP, mPaint);
 			}
@@ -165,6 +167,22 @@ public class UISwitchButton extends View implements OnTouchListener{
 
 	public void setType(int type) {
 		this.type = type;
+	}
+
+	public int getStatusFalseColor() {
+		return statusFalseColor;
+	}
+
+	public void setStatusFalseColor(int statusFalseColor) {
+		this.statusFalseColor = statusFalseColor;
+	}
+
+	public int getStatusTrueColor() {
+		return statusTrueColor;
+	}
+
+	public void setStatusTrueColor(int statusTrueColor) {
+		this.statusTrueColor = statusTrueColor;
 	}
 
 	public interface OnUISwitchChangeListener{
