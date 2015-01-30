@@ -108,6 +108,10 @@ public class UIViewSwitcher extends LinearLayout {
 		this.delegatePageListener = listener;
 	}
 
+	public void setSelectedPosition(int selectedPosition) {
+		this.selectedPosition = selectedPosition;
+	}
+
 	public void notifyDataSetChanged() {
 
 		tabsContainer.removeAllViews();
