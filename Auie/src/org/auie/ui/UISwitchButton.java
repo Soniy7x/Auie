@@ -149,6 +149,7 @@ public class UISwitchButton extends View implements OnTouchListener{
 				mPaint.setColor(statusTrueColor);
 				mPaint.setStyle(Style.FILL);
 				canvas.drawCircle(getWidth() - getHeight()/2, getHeight()/2, getHeight()/2 - 4.8f * DP, mPaint);
+				mPaint.setColor(statusFalseColor);
 			}else {
 				mPaint.setColor(statusTrueColor);
 				canvas.drawLine(getHeight() - 4 * DP, getHeight()/2, getWidth() - 4 * DP, getHeight()/2, mPaint);
@@ -156,6 +157,7 @@ public class UISwitchButton extends View implements OnTouchListener{
 				mPaint.setColor(statusFalseColor);
 				mPaint.setStyle(Style.FILL);
 				canvas.drawCircle(getHeight()/2, getHeight()/2, getHeight()/2 - 4.8f * DP, mPaint);
+				mPaint.setColor(statusTrueColor);
 			}
 			break;
 		}
